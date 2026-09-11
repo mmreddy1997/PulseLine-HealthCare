@@ -16,7 +16,7 @@ This increment is a local **data-validation foundation** only:
 
 The dashboard, maps, authentication, live NPPES lookup, invented financial metrics, and risk scoring are **not implemented**.
 
-Research extracts such as `Shadow_Revenue_source_pack.md` and `hospital_cost_report_candidates.json` are **not in this repository yet**. The schema here is provisional until a verified extract is inspected.
+Research extracts are now available under `research/`. They preserve original source fields and uncertainty notes; they have not yet been adapted to or validated against the application schema.
 
 ## Setup
 
@@ -56,3 +56,14 @@ npm run validate -- tests/fixtures/simulated-cost-reports.json
 ## Next step
 
 Import verified CMS research data (when those source files are available) through an adapter that preserves raw extracts. Do not invent their contents here.
+
+## Research evidence
+
+Three Kentucky hospitals, 12 historical cost reports across the 2020–2023 file cohorts, and explicit source and missing-data notes. Event verification and historical model validation remain incomplete.
+
+- [PulseLine_three_hospital_evidence.md](research/PulseLine_three_hospital_evidence.md)
+- [PulseLine_three_hospital_data.json](research/PulseLine_three_hospital_data.json)
+- [PulseLine_event_log.json](research/PulseLine_event_log.json)
+- [PulseLine_data_dictionary.md](research/PulseLine_data_dictionary.md)
+
+Kentucky River’s historical and current CCNs differ. Consult the identity notes before joining records. No unsupported risk scores or personal clinician histories are included.

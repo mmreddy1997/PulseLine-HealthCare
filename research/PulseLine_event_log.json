@@ -1,0 +1,225 @@
+{
+  "accessed": "2026-09-11",
+  "investigation_status": "Incomplete: no systematic acquisition, bankruptcy, closure or service-line-reduction verification yet",
+  "outcome_log": [],
+  "hospital_outcome_status": [
+    {
+      "hospital_id": "KY-LIC-600070",
+      "event_type": "acquisition",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600070",
+      "event_type": "bankruptcy_filing",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600070",
+      "event_type": "closure",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600070",
+      "event_type": "service_line_reduction",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600058",
+      "event_type": "acquisition",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600058",
+      "event_type": "bankruptcy_filing",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600058",
+      "event_type": "closure",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-600058",
+      "event_type": "service_line_reduction",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-100620",
+      "event_type": "acquisition",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-100620",
+      "event_type": "bankruptcy_filing",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-100620",
+      "event_type": "closure",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    },
+    {
+      "hospital_id": "KY-LIC-100620",
+      "event_type": "service_line_reduction",
+      "event_occurred": null,
+      "effective_date": null,
+      "source_url": null,
+      "status": "not yet verified; not a negative outcome label"
+    }
+  ],
+  "context_events": [
+    {
+      "hospital_id": "KY-LIC-100620",
+      "event_type": "CAH_designation_announcement",
+      "announcement_date": "2025-01-07",
+      "effective_date": null,
+      "source_id": "KR_CAH",
+      "distress_outcome": false,
+      "limitations": "Classification change only; not bankruptcy, closure, acquisition or service reduction."
+    }
+  ],
+  "sources": {
+    "CMS_current": {
+      "url": "https://data.cms.gov/provider-data/dataset/xubh-q36u",
+      "reporting_period": "Current downloaded snapshot; release date unverified",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Current facility classification and ownership category; not real-time operating verification. API resource 90fa4cdf-f49d-556d-8790-d32fbbec40c6."
+    },
+    "KY_directory": {
+      "url": "https://www.chfs.ky.gov/agencies/os/oig/dhc/Documents/Hospital%20Directory.pdf",
+      "reporting_period": "April 2026",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "License IDs are distinct from CCNs."
+    },
+    "KY_2025": {
+      "url": "https://www.chfs.ky.gov/agencies/os/oig/dcn/surveyreports/HospitalFINAL2025.pdf",
+      "reporting_period": "2025",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Table 1 and Table 1A are different reporting categories. Text extraction checked against headers; visual screenshot verification unavailable. No claim that this resolves classification inconsistency."
+    },
+    "CAH_definition": {
+      "url": "https://www.cms.gov/medicare/health-safety-standards/certification-compliance/critical-access-hospitals",
+      "reporting_period": "Current guidance",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Rural or treated as rural, not independently established Census/HRSA geography."
+    },
+    "KR_CAH": {
+      "url": "https://kentuckyrivermc.com/kentucky-river-medical-center-achieves-critical-access-hospital-designation-enhancing-healthcare-access-in-breathitt-county/",
+      "reporting_period": "Announcement 2025-01-07",
+      "accessed": "2026-09-11",
+      "publication_date": "2025-01-07",
+      "limitations": "Announcement date is not necessarily effective date. Supports designation transition, not exact historical CCN validity boundaries."
+    },
+    "POP_21027": {
+      "url": "https://www.census.gov/quickfacts/fact/table/breckinridgecountykentucky/SBO010222",
+      "reporting_period": "2025 V2025 estimate and 2020 Census",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "County population is not hospital service population or affected population."
+    },
+    "SERV_600070": {
+      "url": "https://www.mybreckhealth.org/bmh",
+      "reporting_period": "Current page; KR article 2026-06-10",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Officially listed services; completeness and real-time capacity not verified."
+    },
+    "POP_21175": {
+      "url": "https://www.census.gov/quickfacts/fact/table/morgancountykentucky/PST045225",
+      "reporting_period": "2025 V2025 estimate and 2020 Census",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "County population is not hospital service population or affected population."
+    },
+    "SERV_600058": {
+      "url": "https://www.arh.org/search-locations/?city_state_zipv=&distance=&keyword=&location_type=Hospital&search_btn=Submit+Query&sortby=relevance",
+      "reporting_period": "Current page; KR article 2026-06-10",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Officially listed services; completeness and real-time capacity not verified."
+    },
+    "POP_21025": {
+      "url": "https://www.census.gov/quickfacts/breathittcountykentucky",
+      "reporting_period": "2025 V2025 estimate and 2020 Census",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "County population is not hospital service population or affected population."
+    },
+    "SERV_100620": {
+      "url": "https://kentuckyrivermc.com/kentucky-river-medical-center-recognized-with-2026-best-of-kentucky-regional-award/",
+      "reporting_period": "Current page; KR article 2026-06-10",
+      "accessed": "2026-09-11",
+      "publication_date": "2026-06-10",
+      "limitations": "Officially listed services; completeness and real-time capacity not verified."
+    },
+    "CMS_2021": {
+      "url": "https://data.cms.gov/sites/default/files/2025-11/7e94fd9d-9ef2-4275-b993-299e30f5b371/CostReport_2021_Final.csv",
+      "reporting_period": "2021 file cohort; each row has actual fiscal dates",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Revised historical cost-report data; original public availability unknown. Figures describe reporting entity/complex, not verified consolidated parent finances. Blank fields remain null. No current-risk inference.",
+      "sha256": "95c97a48cdd3cb52ed27c4f9e988c0c28e8f8a0796cf42588ead67d0e367c3ed"
+    },
+    "CMS_2020": {
+      "url": "https://data.cms.gov/sites/default/files/2025-11/bd432d70-3689-4e8e-a8a5-5e7bf5232cb6/CostReport_2020_Final.csv",
+      "reporting_period": "2020 file cohort; each row has actual fiscal dates",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Revised historical cost-report data; original public availability unknown. Figures describe reporting entity/complex, not verified consolidated parent finances. Blank fields remain null. No current-risk inference.",
+      "sha256": "d485aad82c62cd391118045f8c45c5ff18af0fcb315ef3935803343f1b88fb58"
+    },
+    "CMS_2022": {
+      "url": "https://data.cms.gov/sites/default/files/2025-11/c298e529-8bee-401a-bbd8-a38e74e19ab2/CostReport_2022_Final.csv",
+      "reporting_period": "2022 file cohort; each row has actual fiscal dates",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Revised historical cost-report data; original public availability unknown. Figures describe reporting entity/complex, not verified consolidated parent finances. Blank fields remain null. No current-risk inference.",
+      "sha256": "a661e206201a405f57548f6705e66269f740e6694540e9645529f2591d839b89"
+    },
+    "CMS_2023": {
+      "url": "https://data.cms.gov/sites/default/files/2026-01/3c39f483-c7e0-4025-8396-4df76942e10f/CostReport_2023_Final.csv",
+      "reporting_period": "2023 file cohort; each row has actual fiscal dates",
+      "accessed": "2026-09-11",
+      "publication_date": null,
+      "limitations": "Revised historical cost-report data; original public availability unknown. Figures describe reporting entity/complex, not verified consolidated parent finances. Blank fields remain null. No current-risk inference.",
+      "sha256": "614f3d94dfeb84092ca775f90913ab4f843233a4fa90c3df3013efeb5221a757"
+    }
+  }
+}
