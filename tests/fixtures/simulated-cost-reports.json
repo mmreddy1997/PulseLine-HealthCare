@@ -1,0 +1,58 @@
+{
+  "disclaimer": "FICTIONAL SIMULATED FIXTURES for PulseLine software tests. These are not CMS cost-report observations, not real hospitals, and not research data.",
+  "observations": [
+    {
+      "hospital": {
+        "name": "Fableton Imaginary Memorial Hospital",
+        "ccn": "018042",
+        "city": "Fableton",
+        "state": "KY",
+        "address": "100 Pretend Ridge Road, Fableton, KY 40000",
+        "identityReviewStatus": "clear"
+      },
+      "fiscalPeriodStart": "2023-07-01",
+      "fiscalPeriodEnd": "2024-06-30",
+      "sourceFields": {
+        "worksheet_g3_line_29_net_income": null,
+        "worksheet_s3_fte_nurses": null
+      },
+      "provenance": {
+        "source": "fictional-test-fixture",
+        "retrievedAt": null,
+        "notes": "Simulated record only. Not a real CMS observation."
+      },
+      "classification": "simulated",
+      "missingData": [
+        {
+          "field": "worksheet_g3_line_29_net_income",
+          "reason": "Intentionally null in this simulated fixture; missing is not zero."
+        }
+      ],
+      "identityDiscrepancies": []
+    },
+    {
+      "hospital": {
+        "name": "Mock River Make-Believe Critical Access Hospital",
+        "ccn": "180777",
+        "city": "Mock River",
+        "state": "Kentucky",
+        "address": "50 Fabricated Ferry Lane, Mock River, KY 40001",
+        "identityReviewStatus": "clear"
+      },
+      "fiscalPeriodStart": "2024-01-01",
+      "fiscalPeriodEnd": "2024-12-31",
+      "sourceFields": {
+        "worksheet_g3_line_29_net_income": 125000,
+        "worksheet_s3_fte_nurses": 42
+      },
+      "provenance": {
+        "source": "fictional-test-fixture",
+        "retrievedAt": null,
+        "notes": "Simulated record only. Not a real CMS observation."
+      },
+      "classification": "simulated",
+      "missingData": [],
+      "identityDiscrepancies": []
+    }
+  ]
+}
