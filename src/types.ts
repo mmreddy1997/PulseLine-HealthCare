@@ -108,6 +108,14 @@ export interface HospitalFinancials {
   uncompensatedCare: number | null;
 }
 
+export interface AddressEvidence {
+  role: "cms_cost_report" | "other_directory";
+  address: string;
+  source: string;
+  retrievedAt: string | null;
+  verification: "pending" | "supported";
+}
+
 export interface HospitalDataQuality {
   identityStatus: IdentityReviewStatus;
   missingFields: string[];
@@ -115,6 +123,9 @@ export interface HospitalDataQuality {
   source: string;
   cmsCostReportAddress: string | null;
   otherDirectoryAddress: string | null;
+  addressMismatch: boolean;
+  addressEvidence: AddressEvidence[];
+  sourceVerification: "pending" | "verified";
 }
 
 /**
@@ -123,7 +134,11 @@ export interface HospitalDataQuality {
  */
 export interface Hospital {
   id: string;
+  hospitalId: string;
   ccn: CmsCcn;
+  currentCcn: string | null;
+  historicalCcn: string | null;
+  ccnAsReported: string | null;
   name: string;
   city: string;
   state: string;
@@ -132,14 +147,21 @@ export interface Hospital {
   address: string | null;
   fiscalYearStart: string | null;
   fiscalYearEnd: string;
+  reportRecordId: string | null;
+  fileCohort: number | null;
+  sourceId: string | null;
+  sourceUrl: string | null;
+  periodDays: number | null;
   financials: HospitalFinancials;
   dataQuality: HospitalDataQuality;
   /** PulseLine field → original CMS / HCRIS field name. */
   sourceFieldMap: Record<string, string>;
   sourceFields: Record<string, unknown>;
+  metricDefinitions: Record<string, string>;
   identityDiscrepancies: IdentityDiscrepancy[];
   classification: ObservationClassification;
   provenance: Provenance;
+  outcomeStatus: string;
 }
 
 export type WorkforceStatus = "not_available" | "simulated" | "real";
@@ -150,26 +172,48 @@ export interface WorkforceSignal {
   explanation: string;
 }
 
-export type FinancialStatus = "Stable" | "Watch" | "High Concern";
-export type ConfidenceLevel = "Low" | "Moderate" | "High";
+export type FinancialStatus = "Stable" | "Watch" | "High Concern" | "Insufficient data";
+export type DataCoverage = "None" | "Low" | "Moderate" | "High";
+export type FactorAvailability = "available" | "unavailable" | "invalid" | "unsupported";
 
 export interface ScoreFactor {
+  id: string;
   metric: string;
   rawValue: number | null;
+  formula: string;
+  healthy: number;
+  concern: number;
+  direction: "lower_is_riskier" | "higher_is_riskier";
   normalizedRisk: number | null;
-  weight: number;
+  baseWeight: number;
+  effectiveWeight: number | null;
+  weightedPoints: number | null;
   reason: string;
   source: string;
   available: boolean;
+  availability: FactorAvailability;
+  exclusion: string | null;
+}
+
+export interface ScoreReconstruction {
+  availableFactorIds: string[];
+  weightSum: number;
+  unroundedScore: number | null;
+  roundedScore: number | null;
+  rounding: string;
+  correlatedFactors: string[];
+  coverageNote: string;
 }
 
 export interface FinancialDistressResult {
-  score: number;
+  score: number | null;
   status: FinancialStatus;
-  confidence: ConfidenceLevel;
+  dataCoverage: DataCoverage;
   factors: ScoreFactor[];
   missingInputs: string[];
+  exclusions: string[];
   limitations: string[];
+  reconstruction: ScoreReconstruction;
 }
 
 export type PulseSeverity = "not_triggered" | "insufficient_evidence" | "watch" | "high";
@@ -188,4 +232,127 @@ export interface HospitalView {
   financial: FinancialDistressResult;
   workforce: WorkforceSignal;
   pulse: PulseLineSignal;
+}
+
+export interface FacilityRadarView {
+  hospitalId: string;
+  name: string;
+  latest: HospitalView;
+  reports: HospitalView[];
+}
+
+export const EVIDENCE_IDENTITY_STATUSES = [
+  "existing_research_id",
+  "internal_case_id_pending_CMS_crosswalk",
+] as const;
+export type EvidenceIdentityStatus = (typeof EVIDENCE_IDENTITY_STATUSES)[number];
+
+export const PROVIDER_CHOW_STATES = ["unknown", "yes", "no"] as const;
+export type ProviderChowState = (typeof PROVIDER_CHOW_STATES)[number];
+
+export const DATE_PRECISIONS = ["day", "month", "year", "unknown"] as const;
+export type DatePrecision = (typeof DATE_PRECISIONS)[number];
+
+export const EVENT_CATEGORIES = [
+  "acquisition",
+  "property_transaction",
+  "parent_bankruptcy",
+  "parent_restructuring",
+] as const;
+export type EventCategory = (typeof EVENT_CATEGORIES)[number];
+
+export const EVENT_STATUSES = ["verified", "verified_parent_event", "unverified", "unknown"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
+
+export const EVENT_SCOPES = ["hospital", "property", "parent", "parent_and_named_debtors"] as const;
+export type EventScope = (typeof EVENT_SCOPES)[number];
+
+export const CONFIDENCE_LEVELS = ["high", "partial", "low"] as const;
+export type ConfidenceLevel = (typeof CONFIDENCE_LEVELS)[number];
+
+export const CUTOFF_STATES = ["not_assessed", "excluded_unknown_publication", "available", "unavailable"] as const;
+export type CutoffState = (typeof CUTOFF_STATES)[number];
+
+export const OBSERVATION_DOMAINS = [
+  "community",
+  "workforce_access",
+  "operational",
+  "financial",
+  "structural",
+] as const;
+export type ObservationDomain = (typeof OBSERVATION_DOMAINS)[number];
+
+export interface EvidenceSource {
+  sourceId: string;
+  url: string;
+  title: string;
+  publicationDate: string | null;
+  publicationPrecision: DatePrecision | null;
+  sourceType: string;
+  accessDate: string;
+  historicallyEligible: boolean;
+  eligibilityNote: string;
+}
+
+export interface StructuralEvent {
+  eventId: string;
+  hospitalId: string;
+  eventCategory: EventCategory;
+  eventSubtype: string;
+  eventStatus: EventStatus;
+  effectiveDate: string | null;
+  effectiveDatePrecision: DatePrecision;
+  announcementDate: string | null;
+  sources: EvidenceSource[];
+  buyer: string | null;
+  seller: string | null;
+  scope: EventScope;
+  eventConfidence: ConfidenceLevel;
+  identityConfidence: ConfidenceLevel;
+  verifiedOutcome: boolean;
+  notes: string;
+  ccnAtEvent: string | null;
+  predictionCutoff: string | null;
+  experimentalSignal: boolean;
+  availableBeforeCutoff: CutoffState;
+  eventGroup: string;
+}
+
+export interface EvidenceObservation {
+  observationId: string;
+  hospitalId: string;
+  domain: ObservationDomain;
+  metric: string;
+  value: number | null;
+  unit: string;
+  reportingPeriod: string | null;
+  scope: string;
+  sources: EvidenceSource[];
+  sourcePage: string | null;
+  publicationDate: string | null;
+  accessDate: string;
+  identityConfidence: ConfidenceLevel;
+  evidenceClass: string;
+  extractionStatus: string;
+  historicalFeatureEligible: boolean;
+  limitations: string;
+}
+
+export interface EvidenceHospital {
+  hospitalId: string;
+  name: string;
+  city: string;
+  identityStatus: EvidenceIdentityStatus;
+  ccnAtEvent: string | null;
+  providerChow: ProviderChowState;
+  financialCoverage: "available" | "pending";
+}
+
+export interface EvidenceLedger {
+  hospitals: EvidenceHospital[];
+  events: StructuralEvent[];
+  observations: EvidenceObservation[];
+  domainCoverage: Record<string, string>;
+  openResearch: string[];
+  rules: string[];
 }

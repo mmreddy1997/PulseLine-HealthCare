@@ -1,4 +1,6 @@
+import { addressesDiffer } from "./addresses.ts";
 import type {
+  AddressEvidence,
   Hospital,
   HospitalFinancials,
   IdentityDiscrepancy,
@@ -9,7 +11,11 @@ import type {
 
 export interface HospitalExtractRecord {
   id: string;
+  hospitalId?: string;
   ccn: string;
+  currentCcn?: string | null;
+  historicalCcn?: string | null;
+  ccnAsReported?: string | null;
   name: string;
   city: string;
   state: string;
@@ -18,16 +24,33 @@ export interface HospitalExtractRecord {
   address?: string | null;
   fiscalYearStart?: string | null;
   fiscalYearEnd: string;
+  reportRecordId?: string | null;
+  fileCohort?: number | null;
+  sourceId?: string | null;
+  sourceUrl?: string | null;
+  periodDays?: number | null;
   identityReviewStatus: IdentityReviewStatus;
   classification: ObservationClassification;
   provenance: Provenance;
   sourceFieldMap: Record<string, string>;
   sourceFields: Record<string, unknown>;
   financials: HospitalFinancials;
+  metricDefinitions?: Record<string, string>;
+  outcomeStatus?: string;
   identityDiscrepancies?: IdentityDiscrepancy[];
   cmsCostReportAddress?: string | null;
   otherDirectoryAddress?: string | null;
+  addressEvidence?: AddressEvidence[];
   dataQualityWarnings?: string[];
+}
+
+export interface HospitalExtractFile {
+  disclaimer: string;
+  source: string;
+  retrievedAt: string;
+  sourceVerification?: "pending" | "verified";
+  missingEvidence?: string[];
+  observations: HospitalExtractRecord[];
 }
 
 function asNullableNumber(value: unknown): number | null {
@@ -71,10 +94,12 @@ export function normalizeHospital(record: HospitalExtractRecord): Hospital {
   const financials = preserveFinancials(record.financials);
   const warnings = [...(record.dataQualityWarnings ?? [])];
 
+  const addressMismatch = addressesDiffer(record.cmsCostReportAddress, record.otherDirectoryAddress);
+
   if (record.identityReviewStatus === "unresolved") {
     warnings.push("Identity verification required.");
   }
-  if (record.cmsCostReportAddress && record.otherDirectoryAddress) {
+  if (addressMismatch) {
     warnings.push("CMS cost-report address and another directory address do not match.");
   }
   if (financials.totalLiabilities !== null && financials.totalLiabilities < 0) {
@@ -83,7 +108,11 @@ export function normalizeHospital(record: HospitalExtractRecord): Hospital {
 
   return {
     id: record.id,
+    hospitalId: record.hospitalId ?? record.id,
     ccn: record.ccn,
+    currentCcn: record.currentCcn ?? null,
+    historicalCcn: record.historicalCcn ?? null,
+    ccnAsReported: record.ccnAsReported ?? record.ccn,
     name: record.name,
     city: record.city,
     state: record.state,
@@ -92,19 +121,29 @@ export function normalizeHospital(record: HospitalExtractRecord): Hospital {
     address: record.address ?? record.cmsCostReportAddress ?? null,
     fiscalYearStart: record.fiscalYearStart ?? null,
     fiscalYearEnd: record.fiscalYearEnd,
+    reportRecordId: record.reportRecordId ?? null,
+    fileCohort: record.fileCohort ?? null,
+    sourceId: record.sourceId ?? null,
+    sourceUrl: record.sourceUrl ?? null,
+    periodDays: record.periodDays ?? null,
     financials,
     dataQuality: {
       identityStatus: record.identityReviewStatus,
       missingFields: missingFinancialFields(financials),
       warnings,
       source: record.provenance.source,
-      cmsCostReportAddress: record.cmsCostReportAddress ?? record.address ?? null,
+      cmsCostReportAddress: record.cmsCostReportAddress ?? null,
       otherDirectoryAddress: record.otherDirectoryAddress ?? null,
+      addressMismatch,
+      addressEvidence: record.addressEvidence ?? [],
+      sourceVerification: "pending",
     },
     sourceFieldMap: { ...record.sourceFieldMap },
     sourceFields: { ...record.sourceFields },
+    metricDefinitions: { ...(record.metricDefinitions ?? {}) },
     identityDiscrepancies: record.identityDiscrepancies ?? [],
     classification: record.classification,
     provenance: record.provenance,
+    outcomeStatus: record.outcomeStatus ?? "Not systematically verified. Null does not mean no event.",
   };
 }

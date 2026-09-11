@@ -1,184 +1,36 @@
-import { useMemo, useState } from "react";
-import extract from "../../data/cms/ky-rural-hospital-extract.json";
-import { flaggedExplanations } from "../../lib/score-financial.ts";
-import { buildHospitalViews, type HospitalExtractFile } from "../../lib/pipeline.ts";
-import type { HospitalView, ScoreFactor } from "../types.ts";
-import { fiscalLabel, money, percent, ratio, statusClass } from "./format.ts";
-
-function factorDisplay(factor: ScoreFactor): string {
-  if (!factor.available || factor.rawValue === null) {
-    return "Not available in current dataset";
-  }
-  if (factor.metric === "Operating Margin") return percent(factor.rawValue);
-  if (factor.metric === "Patient Volume") return percent(factor.rawValue);
-  return ratio(factor.rawValue);
-}
-
-function ScoreMeter({ score, status }: { score: number; status: HospitalView["financial"]["status"] }) {
-  return (
-    <div className={`score-meter ${statusClass(status)}`}>
-      <div className="score-meter-value">{score}</div>
-      <div className="score-meter-scale">/ 100</div>
-      <div className="score-meter-bar" aria-hidden="true">
-        <span style={{ width: `${score}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function HospitalDrawer({
-  view,
-  onClose,
-}: {
-  view: HospitalView;
-  onClose: () => void;
-}) {
-  const { hospital, financial, workforce, pulse } = view;
-  const explanations = flaggedExplanations(financial);
-
-  return (
-    <div className="drawer-layer">
-      <button type="button" className="drawer-backdrop" aria-label="Close hospital detail" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-labelledby="drawer-title">
-        <header className="drawer-header">
-          <p className="eyebrow">Hospital deep dive</p>
-          <h2 id="drawer-title">{hospital.name}</h2>
-          <p className="muted">
-            {hospital.city}, {hospital.state}
-            {hospital.county ? ` · ${hospital.county} County` : ""} · CCN {hospital.ccn}
-          </p>
-          <button type="button" className="close-btn" onClick={onClose}>
-            Close
-          </button>
-        </header>
-
-        <section>
-          <h3>PulseLine overview</h3>
-          <div className="overview-grid">
-            <div>
-              <span className="label">Financial stress</span>
-              <ScoreMeter score={financial.score} status={financial.status} />
-            </div>
-            <div>
-              <span className="label">Status</span>
-              <p className={`status-pill ${statusClass(financial.status)}`}>{financial.status}</p>
-              <span className="label">Confidence</span>
-              <p>{financial.confidence}</p>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <h3>Financial signals</h3>
-          <ul className="signal-list">
-            {financial.factors.map((factor) => (
-              <li key={factor.metric}>
-                <div className="signal-head">
-                  <strong>{factor.metric}</strong>
-                  <span>{factorDisplay(factor)}</span>
-                </div>
-                <p className="muted small">{factor.reason}</p>
-                {factor.available && factor.normalizedRisk !== null ? (
-                  <p className="tiny">
-                    Risk contribution {Math.round(factor.normalizedRisk)} / 100 · source {factor.source}
-                  </p>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <h3>Why is this hospital flagged?</h3>
-          {explanations.length === 0 ? (
-            <p>No scored factor is currently in the elevated-risk band. The hospital still appears because it is part of the Kentucky radar set.</p>
-          ) : (
-            <ul className="reason-list">
-              {explanations.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          )}
-          <p className="muted small">Explanations are generated from the scoring engine, not from a language model.</p>
-        </section>
-
-        <section>
-          <h3>Workforce signal</h3>
-          <p className="status-pill status-pending">Pending longitudinal NPPES integration</p>
-          <p>{workforce.summary}</p>
-          <p className="muted small">{workforce.explanation}</p>
-        </section>
-
-        <section>
-          <h3>PulseLine signal</h3>
-          <p className={`status-pill ${pulse.triggered ? "status-high" : "status-pending"}`}>
-            {pulse.severity === "insufficient_evidence"
-              ? "Insufficient evidence for multi-signal deterioration"
-              : "Combined signal not triggered"}
-          </p>
-          {pulse.reasons.map((reason) => (
-            <p key={reason}>{reason}</p>
-          ))}
-          <p className="muted small">
-            Financial stress is visible, but PulseLine requires longitudinal workforce evidence before triggering
-            its combined early-warning signal.
-          </p>
-        </section>
-
-        <section>
-          <h3>Data quality</h3>
-          <dl className="meta-list">
-            <div>
-              <dt>Source</dt>
-              <dd>{hospital.dataQuality.source}</dd>
-            </div>
-            <div>
-              <dt>Fiscal date</dt>
-              <dd>{fiscalLabel(hospital.fiscalYearStart, hospital.fiscalYearEnd)}</dd>
-            </div>
-            <div>
-              <dt>Identity status</dt>
-              <dd>{hospital.dataQuality.identityStatus === "unresolved" ? "Identity verification required" : hospital.dataQuality.identityStatus}</dd>
-            </div>
-            <div>
-              <dt>Missing metrics</dt>
-              <dd>{hospital.dataQuality.missingFields.length ? hospital.dataQuality.missingFields.join(", ") : "None recorded"}</dd>
-            </div>
-          </dl>
-          {hospital.dataQuality.cmsCostReportAddress || hospital.dataQuality.otherDirectoryAddress ? (
-            <div className="address-block">
-              <p className="label">Known address discrepancy</p>
-              <p>
-                Historical CMS cost-report address:{" "}
-                <strong>{hospital.dataQuality.cmsCostReportAddress ?? "Not recorded"}</strong>
-              </p>
-              <p>
-                Other directory address:{" "}
-                <strong>{hospital.dataQuality.otherDirectoryAddress ?? "Not recorded"}</strong>
-              </p>
-              <p className="muted small">
-                An address difference is an identity-review item. It does not prove a physician departure.
-              </p>
-            </div>
-          ) : null}
-          {hospital.dataQuality.warnings.length > 0 ? (
-            <ul className="reason-list">
-              {hospital.dataQuality.warnings.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-      </aside>
-    </div>
-  );
-}
+import { useCallback, useMemo, useState } from "react";
+import evidencePack from "../../research/PulseLine_expanded_evidence_v1.json";
+import researchPack from "../../research/PulseLine_three_hospital_data.json";
+import { adaptEvidencePack, eventsForHospital, observationsForHospital } from "../../lib/adapt-evidence.ts";
+import { loadResearchDashboard } from "../../lib/pipeline.ts";
+import { scoringConfig } from "../../lib/scoring-config.ts";
+import { EventTimeline } from "./EventTimeline.tsx";
+import { HospitalDrawer } from "./HospitalDrawer.tsx";
+import { ResearchCaseDrawer } from "./ResearchCaseDrawer.tsx";
+import { fiscalLabel, money, statusClass } from "./format.ts";
 
 export function App() {
-  const views = useMemo(() => buildHospitalViews(extract as HospitalExtractFile), []);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = views.find((view) => view.hospital.id === selectedId) ?? null;
-  const ranked = [...views].sort((a, b) => b.financial.score - a.financial.score);
+  const loaded = useMemo(() => loadResearchDashboard(researchPack), []);
+  const evidence = useMemo(() => adaptEvidencePack(evidencePack), []);
+  const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [selectedResearchId, setSelectedResearchId] = useState<string | null>(null);
+
+  const selectedFacility = loaded.facilities.find((facility) => facility.hospitalId === selectedHospitalId) ?? null;
+  const selected =
+    selectedFacility?.reports.find((report) => report.hospital.id === selectedReportId) ??
+    selectedFacility?.latest ??
+    null;
+  const researchCases = evidence.ledger?.hospitals.filter((hospital) => hospital.financialCoverage === "pending") ?? [];
+  const selectedResearch = researchCases.find((hospital) => hospital.hospitalId === selectedResearchId) ?? null;
+
+  const closeFacility = useCallback(() => {
+    setSelectedHospitalId(null);
+    setSelectedReportId(null);
+  }, []);
+  const closeResearch = useCallback(() => {
+    setSelectedResearchId(null);
+  }, []);
 
   return (
     <div className="page">
@@ -187,81 +39,206 @@ export function App() {
         <h1>PulseLine</h1>
         <p className="tagline">Early Warning Intelligence for Rural Healthcare</p>
         <p className="lede">
-          Detecting emerging financial and workforce instability before healthcare access deteriorates.
+          A historical financial prototype using 12 researched CMS cost reports for Breckinridge Memorial, Morgan County
+          ARH, and Kentucky River, plus a separate sourced structural-event timeline. It does not detect workforce
+          instability and is not a validated early-warning or bankruptcy model. Five-domain research and matched
+          controls remain pending.
         </p>
       </header>
 
+      {!loaded.ok ? (
+        <section className="extract-error" role="alert">
+          <h2>Dashboard extract failed validation</h2>
+          <p>The hospital radar is not shown because the extract is invalid. Nothing was scored.</p>
+          <ul>
+            {loaded.errors.map((error) => (
+              <li key={`${error.code}-${error.path}`}>
+                [{error.code}] {error.path}: {error.message}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <>
+          <section className="radar">
+            <div className="section-head">
+              <h2>Kentucky hospital radar</h2>
+              <p>
+                Latest fiscal CMS report for each facility. {loaded.views.length} hospital-year reports across{" "}
+                {loaded.facilities.length} hospitals. Source verification is {loaded.sourceVerification}.
+              </p>
+            </div>
+            <div className="card-grid">
+              {loaded.facilities.map((facility) => {
+                const view = facility.latest;
+                return (
+                  <button
+                    type="button"
+                    key={facility.hospitalId}
+                    className={`hospital-card ${statusClass(view.financial.status)}`}
+                    onClick={() => {
+                      setSelectedResearchId(null);
+                      setSelectedHospitalId(facility.hospitalId);
+                      setSelectedReportId(view.hospital.id);
+                    }}
+                  >
+                    <div className="card-top">
+                      <h3>{facility.name}</h3>
+                      <span className={`status-pill ${statusClass(view.financial.status)}`}>
+                        {scoringConfig.statusLabels[view.financial.status].toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="muted">
+                      {view.hospital.city}
+                      {view.hospital.county ? `, ${view.hospital.county} County` : ""} · reported CCN{" "}
+                      {view.hospital.ccnAsReported}
+                    </p>
+                    <div className="card-score">
+                      <span className="label">Financial stress</span>
+                      <strong>{view.financial.score === null ? "—" : view.financial.score}</strong>
+                    </div>
+                    <p className="tiny">
+                      Latest fiscal period: {fiscalLabel(view.hospital.fiscalYearStart, view.hospital.fiscalYearEnd)}
+                    </p>
+                    <p className="tiny">
+                      Data coverage: {view.financial.dataCoverage}
+                      {view.hospital.dataQuality.identityStatus === "unresolved"
+                        ? " · Identity verification required"
+                        : ""}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="snapshot">
+            <h2>Hospital pressure from CMS fiscal reports</h2>
+            <div className="snapshot-grid">
+              {loaded.facilities.map((facility) => {
+                const view = facility.latest;
+                return (
+                  <article key={`${facility.hospitalId}-snap`}>
+                    <h3>{facility.name}</h3>
+                    <p>Net Patient Revenue {money(view.hospital.financials.netPatientRevenue)}</p>
+                    <p>Less Total Operating Expense {money(view.hospital.financials.operatingExpenses)}</p>
+                    <p>Cash on Hand and in Banks {money(view.hospital.financials.cash)}</p>
+                    <p className="tiny">Kentucky 2025 utilization is not mixed into these fiscal-year figures.</p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
+
       <section className="radar">
         <div className="section-head">
-          <h2>Kentucky hospital radar</h2>
+          <h2>Research cohort · financial coverage pending</h2>
           <p>
-            Three observed CMS cost-report summaries. This is exploratory decision support, not a bankruptcy
-            predictor.
+            Highlands and Paul B. Hall are a separate evidence cohort. CCNs, license IDs, financials, and scores were
+            not invented.
           </p>
         </div>
-        <div className="card-grid">
-          {ranked.map((view) => (
-            <button
-              type="button"
-              key={view.hospital.id}
-              className={`hospital-card ${statusClass(view.financial.status)}`}
-              onClick={() => setSelectedId(view.hospital.id)}
-            >
-              <div className="card-top">
-                <h3>{view.hospital.name}</h3>
-                <span className={`status-pill ${statusClass(view.financial.status)}`}>
-                  {view.financial.status.toUpperCase()}
-                </span>
-              </div>
-              <p className="muted">
-                {view.hospital.city}
-                {view.hospital.county ? `, ${view.hospital.county} County` : ""} · CCN {view.hospital.ccn}
-              </p>
-              <div className="card-score">
-                <span className="label">Financial stress</span>
-                <strong>{view.financial.score}</strong>
-              </div>
-              <p className="tiny">Fiscal period: {fiscalLabel(view.hospital.fiscalYearStart, view.hospital.fiscalYearEnd)}</p>
-              <p className="tiny">
-                Data quality:{" "}
-                {view.hospital.dataQuality.identityStatus === "unresolved"
-                  ? "Identity verification required"
-                  : `${view.hospital.dataQuality.missingFields.length} missing field(s)`}
-              </p>
-            </button>
-          ))}
-        </div>
+        {!evidence.ok ? (
+          <div className="extract-error" role="alert">
+            <p>Evidence ledger failed validation. The timeline is not shown.</p>
+            <ul>
+              {evidence.errors.map((error) => (
+                <li key={`${error.code}-${error.path}`}>
+                  [{error.code}] {error.path}: {error.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="card-grid">
+            {researchCases.map((hospital) => (
+              <button
+                type="button"
+                key={hospital.hospitalId}
+                className="hospital-card status-insufficient"
+                onClick={() => {
+                  setSelectedHospitalId(null);
+                  setSelectedReportId(null);
+                  setSelectedResearchId(hospital.hospitalId);
+                }}
+              >
+                <div className="card-top">
+                  <h3>{hospital.name}</h3>
+                  <span className="status-pill status-pending">PENDING</span>
+                </div>
+                <p className="muted">{hospital.city} · {hospital.hospitalId}</p>
+                <p className="tiny">CCN at event unknown · provider CHOW {hospital.providerChow}</p>
+                <p className="tiny">Identity {hospital.identityStatus.replaceAll("_", " ")}</p>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="snapshot">
-        <h2>What the current extract can show</h2>
-        <div className="snapshot-grid">
-          {ranked.map((view) => (
-            <article key={`${view.hospital.id}-snap`}>
-              <h3>{view.hospital.name}</h3>
-              <p>Operating revenue {money(view.hospital.financials.operatingRevenue)}</p>
-              <p>Operating margin {percent(view.hospital.financials.operatingMargin)}</p>
-              <p>Uncompensated care {money(view.hospital.financials.uncompensatedCare)}</p>
-              <p>Cash {money(view.hospital.financials.cash)}</p>
-            </article>
-          ))}
-        </div>
+        <h2>Sourced structural-event timeline</h2>
+        <p className="muted">
+          Separate from the financial score. Acquisition and rename share one event group. Kentucky River property sale
+          is not a provider CHOW. Quorum parent events are not a verified facility bankruptcy.
+        </p>
+        {evidence.ok && evidence.ledger ? (
+          <EventTimeline
+            events={evidence.ledger.events}
+            emptyLabel="No structural events were validated from the evidence ledger."
+          />
+        ) : (
+          <p className="muted small">Timeline withheld because the evidence ledger is invalid.</p>
+        )}
       </section>
 
       <section className="methodology" id="methodology">
         <h2>Methodology &amp; limitations</h2>
         <ul>
           <li>CMS cost reports are historical financial observations, not forecasts.</li>
-          <li>PulseLine currently demonstrates financial distress scoring from fields present in this extract.</li>
-          <li>NPPES does not establish hospital employment.</li>
-          <li>Practice-location changes do not necessarily indicate physician departure.</li>
-          <li>Longitudinal workforce analysis requires historical snapshots, which are not integrated yet.</li>
-          <li>Three hospitals demonstrate workflow, not predictive validity.</li>
-          <li>PulseLine is a hackathon decision-support prototype, not a validated 6–12 month model.</li>
+          <li>PulseLine scores the latest fiscal report per hospital and keeps earlier reports inspectable.</li>
+          <li>
+            Patient-service expense pressure uses Less Total Operating Expense / Net Patient Revenue. Overall operating
+            margin is not calculated.
+          </li>
+          <li>Negative cash and negative liabilities are preserved and uninterpretable ratios are excluded.</li>
+          <li>Hospital pressure and community context are shown separately. No new weighted convergence score was added.</li>
+          <li>A null publication date is not historical eligibility.</li>
+          <li>Acquisition, bankruptcy, closure, and service-reduction outcomes stay unknown unless a sourced event says otherwise.</li>
+          <li>Workforce / NPPES, five-domain profiles, pre-event panels, and matched controls remain pending.</li>
+          {loaded.missingEvidence.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+          {evidence.ledger
+            ? Object.entries(evidence.ledger.domainCoverage).map(([domain, note]) => (
+                <li key={domain}>
+                  {domain} coverage: {note}
+                </li>
+              ))
+            : null}
         </ul>
       </section>
 
-      {selected ? <HospitalDrawer view={selected} onClose={() => setSelectedId(null)} /> : null}
+      {selected && selectedFacility ? (
+        <HospitalDrawer
+          view={selected}
+          reports={selectedFacility.reports}
+          events={eventsForHospital(evidence.ledger, selectedFacility.hospitalId)}
+          observations={observationsForHospital(evidence.ledger, selectedFacility.hospitalId)}
+          onSelectReport={setSelectedReportId}
+          onClose={closeFacility}
+        />
+      ) : null}
+
+      {selectedResearch ? (
+        <ResearchCaseDrawer
+          hospital={selectedResearch}
+          events={eventsForHospital(evidence.ledger, selectedResearch.hospitalId)}
+          observations={observationsForHospital(evidence.ledger, selectedResearch.hospitalId)}
+          onClose={closeResearch}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * Experimental hackathon thresholds for PulseLine financial stress.
- * Keep these here — UI components must not hardcode bands or cutoffs.
+ * UI labels, bands, and factor copy are generated from this file.
  */
 
 export const scoringConfig = {
@@ -10,19 +10,33 @@ export const scoringConfig = {
     /** Inclusive upper bound for Watch. Above this is High Concern. */
     watchMax: 69,
   },
-  confidence: {
+  statusLabels: {
+    Stable: "Stable",
+    Watch: "Watch",
+    "High Concern": "High Concern",
+    "Insufficient data": "Insufficient data",
+  },
+  dataCoverage: {
     highMinAvailable: 5,
     moderateMinAvailable: 3,
   },
+  rounding: "Nearest integer via Math.round after a weight-renormalized average of available factor risks. The score is null when no factor can be scored.",
+  correlatedFactorGroups: [
+    {
+      ids: ["operating_margin", "expense_pressure"],
+      note: "A validated overall operating margin is not calculated. Patient-service expense pressure uses Net Patient Revenue and Less Total Operating Expense only.",
+    },
+  ],
   /**
    * Linear risk ramps. Values at or beyond `healthy` score 0 risk;
    * values at or beyond `concern` score 100. Weights are renormalized
-   * across factors that are actually present.
+   * across factors that are actually scored.
    */
   factors: {
     operatingMargin: {
       id: "operating_margin",
       label: "Operating Margin",
+      formula: "not calculated — patient-care result is not a validated overall operating margin",
       weight: 0.28,
       direction: "lower_is_riskier" as const,
       healthy: 0.08,
@@ -30,7 +44,8 @@ export const scoringConfig = {
     },
     expensePressure: {
       id: "expense_pressure",
-      label: "Revenue / Expense Pressure",
+      label: "Patient-service expense pressure",
+      formula: "Less Total Operating Expense / Net Patient Revenue",
       weight: 0.18,
       direction: "higher_is_riskier" as const,
       healthy: 0.92,
@@ -39,6 +54,7 @@ export const scoringConfig = {
     leverage: {
       id: "leverage",
       label: "Liabilities / Assets",
+      formula: "totalLiabilities / totalAssets",
       weight: 0.22,
       direction: "higher_is_riskier" as const,
       healthy: 0.4,
@@ -47,6 +63,7 @@ export const scoringConfig = {
     currentRatio: {
       id: "current_ratio",
       label: "Current Ratio",
+      formula: "currentAssets / currentLiabilities",
       weight: 0.12,
       direction: "lower_is_riskier" as const,
       healthy: 2.0,
@@ -55,6 +72,7 @@ export const scoringConfig = {
     liquidity: {
       id: "liquidity",
       label: "Cash / Liquidity",
+      formula: "cash / operatingExpenses",
       weight: 0.1,
       direction: "lower_is_riskier" as const,
       healthy: 0.15,
@@ -63,6 +81,7 @@ export const scoringConfig = {
     volume: {
       id: "patient_volume",
       label: "Patient Volume",
+      formula: "inpatientDays / bedDaysAvailable",
       weight: 0.1,
       direction: "lower_is_riskier" as const,
       healthy: 0.45,

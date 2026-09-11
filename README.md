@@ -2,7 +2,7 @@
 
 Early Warning Intelligence for Rural Healthcare
 
-Detecting emerging financial and workforce instability before healthcare access deteriorates.
+A **historical financial prototype** for three Kentucky CAHs, plus a separate sourced structural-event timeline. It uses researched CMS cost-report rows. It does not detect emerging workforce instability and is not a validated early-warning or bankruptcy model. Workforce analysis, five-domain profiles, pre-event panels, and matched controls remain pending.
 
 ## Problem
 
@@ -10,80 +10,80 @@ Rural and safety-net hospitals can lose service lines, convert, or close after f
 
 ## Product hypothesis
 
-If Kentucky leaders can see **transparent financial distress** next to **honest data-quality limits**, they can investigate access risk earlier. A second signal — longitudinal workforce instability from historical NPPES snapshots — is planned. PulseLine will not treat a single financial ratio, or a missing workforce feed, as proof of closure or bankruptcy.
+If Kentucky leaders can see **transparent historical financial stress** next to **honest data-quality limits** and a sourced event timeline, they can decide what to investigate. A second signal — longitudinal workforce instability from historical NPPES snapshots — is planned and is not implemented.
 
 ## Target users
 
-County and state healthcare leadership in Kentucky. This is exploratory decision support, not a bedside or credit-rating tool.
+County and state healthcare leadership in Kentucky.
 
 ## Current architecture
 
-1. **Validation foundation** (`src/validate.ts`, `src/types.ts`) — unknown JSON in, structured errors/warnings out. Existing fictional fixtures stay under `tests/fixtures`.
-2. **CMS extract** (`data/cms/ky-rural-hospital-extract.json`) — three observed Kentucky hospital summaries derived from public CMS HCRIS totals. Original field names are preserved in `sourceFields` / `sourceFieldMap`.
-3. **Normalization** (`lib/normalize-hospital.ts`) — maps the extract to the hospital model. Missing financials stay null.
-4. **Financial distress engine** (`lib/score-financial.ts`, thresholds in `lib/scoring-config.ts`).
-5. **Workforce placeholder** (`lib/workforce.ts`) — `workforceStatus = "not_available"`.
-6. **PulseLine signal** (`lib/pulse-signal.ts`) — will not trigger on finance alone.
-7. **Dashboard** (`src/ui`) — Vite + React hospital radar, deep-dive drawer, methodology panel.
+1. Financial research pack (`research/PulseLine_three_hospital_data.json`, evidence, dictionary, event log).
+2. Financial adapter (`lib/adapt-research.ts`) converts 12 hospital-year reports, preserving original CMS strings, report record IDs, file cohorts, fiscal dates, and nulls. Null hospital/report rows and unresolved source IDs fail closed.
+3. Extract validation (`lib/validate-extract.ts`) runs before normalize/score.
+4. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`).
+5. Evidence ledger (`research/PulseLine_expanded_evidence_v1.json`) through `lib/adapt-evidence.ts`.
+6. Dashboard (`src/ui`) shows the latest fiscal report per scored hospital, earlier reports, and a structural-event timeline that is not part of the score.
 
-## Data sources
+## Research-backed workflow
 
-- Public CMS Hospital Cost Report (HCRIS) summaries for:
-  - Kentucky River Medical Center (CCN `180139`)
-  - Tug Valley ARH (CCN `180069`)
-  - Pineville Community Health Center (CCN `180154`)
-- Dollar figures are **rounded public totals**, not full CMS-2552 line-item cents.
-- `Shadow_Revenue_source_pack.md` and `hospital_cost_report_candidates.json` are **not in the repository yet**. This schema is provisional until that extract is inspected.
-- Simulated validator fixtures in `tests/fixtures` are fictional and are not CMS observations.
+1. Read the three-hospital research pack and dictionary.
+2. Keep `hospital_id` (Kentucky license key) as facility identity.
+3. Keep each CMS `report_record_id` and actual `fiscal_start` / `fiscal_end`.
+4. Parse original CMS numeric strings explicitly; reject malformed values.
+5. Score only definitionally supported ratios from that fiscal report.
+6. Do not mix Kentucky calendar-year utilization into CMS fiscal-year figures.
+7. Load the expanded evidence ledger only through the typed adapter.
+8. Show effective date, announcement date, scope, source link, and verification limits. A null publication date is not historical eligibility.
+
+Scored hospitals:
+
+- Breckinridge Memorial Hospital (`KY-LIC-600070`, CCN `181319`)
+- Morgan County ARH Hospital (`KY-LIC-600058`, CCN `181307`)
+- Kentucky River Medical Center (`KY-LIC-100620`, historical CCN `180139`, current CCN `181334`)
+
+Research cohort, financial coverage pending (no invented CCN, license, financials, or score):
+
+- Highlands Regional Medical Center / Highlands ARH (`case_highlands`)
+- Paul B. Hall Regional Medical Center / Paintsville ARH (`case_paul_b_hall`)
 
 ## Scoring methodology
 
-Configurable in `lib/scoring-config.ts`. The UI does not hardcode thresholds.
+Configurable in `lib/scoring-config.ts`.
 
-Available factors (used only when the extract actually has the inputs):
-
-| Factor | Construction | Direction |
+| Factor | Construction | Notes |
 | --- | --- | --- |
-| Operating margin | Reported HCRIS operating margin | Lower is riskier |
-| Revenue / expense pressure | `total_costs / total_revenues` | Higher is riskier |
-| Liabilities / assets | `total_liabilities / total_assets` | Higher is riskier; skipped if liabilities are negative |
-| Current ratio | current assets / current liabilities | Lower is riskier |
-| Cash / liquidity | cash / operating expenses | Lower is riskier |
-| Patient volume | inpatient days / bed days available | Lower is riskier |
+| Operating margin | not calculated | Patient-care result is not a validated overall operating margin |
+| Patient-service expense pressure | Less Total Operating Expense / Net Patient Revenue | Supported derived ratio; invalid if revenue ≤ 0 |
+| Liabilities / assets | Total Liabilities / Total Assets | Excluded if liabilities or assets are uninterpretable |
+| Current ratio | Total Current Assets / Total Current Liabilities | Excluded if current liabilities ≤ 0 |
+| Cash / liquidity | Cash on Hand and in Banks / Less Total Operating Expense | Negative cash is preserved and excluded from the ratio |
+| Patient volume | Total Days / Total Bed Days Available | CMS fiscal report only |
 
-Each available factor is linearly scaled to 0–100 risk between its `healthy` and `concern` anchors. The hospital score is the **weight-renormalized average** of available factors, rounded to an integer 0–100.
+If no factor can be scored, score is null and status is **Insufficient data**.
 
-- 0–39 Stable
-- 40–69 Watch
-- 70–100 High Concern
+## Structural events
 
-Confidence is Low / Moderate / High from the count of available factors.
+Shown separately from the financial score.
+
+- Highlands acquisition (2019-08-01) and rename share one event group.
+- Paul B. Hall acquisition (effective 2021-12-01; announcement 2021-09-23) and rename share one event group.
+- Kentucky River September 2021 property sale is a property transaction, not a verified provider CHOW.
+- Quorum April 2020 bankruptcy and July 2020 emergence are parent events, not a verified Kentucky River hospital bankruptcy.
+
+Hospital pressure (CMS fiscal reports / licensed beds) and community context (Floyd County CHNA figures) are separate. No new weighted convergence score, forecast, or NPPES departure inference was added.
 
 ## Limitations
 
-- Not a validated bankruptcy, closure, or 6–12-month forecast.
-- Financial distress, service reductions, closure, conversion, acquisition, and bankruptcy are separate outcomes.
-- NPPES does not establish hospital employment.
-- A practice-location or address change does not prove a physician departure.
-- Current assets, current liabilities, cash, and net patient revenue are **not in this extract** and are shown as unavailable, not zero.
-- Three hospitals demonstrate workflow, not predictive validity.
-- Combined PulseLine signal stays off until a longitudinal workforce feed exists.
-
-## Current MVP status
-
-Working vertical slice:
-
-CMS hospital summaries → normalize → financial score → dashboard → hospital deep dive → deterministic explanation.
-
-Not implemented: AI policy memo, PDF, map, auth, database, live NPPES detector, nationwide coverage, ML model.
-
-## Next planned signal
-
-NPPES workforce instability, using **historical snapshots**. Do not fabricate migration data before those snapshots exist.
+- Revised CMS CSV publication dates are unverified.
+- Reporting-entity vs parent consolidation is not independently reconciled.
+- Kentucky River CCN transition effective date is unknown.
+- Event-time CCNs and legal-entity crosswalks are unresolved for the research cohort.
+- A null publication date excludes historical eligibility.
+- Outcomes stay unknown unless a sourced event says otherwise.
+- Workforce / NPPES, five-domain research, pre-event panels, and matched controls are pending.
 
 ## How to run locally
-
-Requires Node.js 20+.
 
 ```bash
 npm install
@@ -92,12 +92,4 @@ npm run typecheck
 npm run lint
 npm run build
 npm run dev
-```
-
-Then open the local Vite URL (usually `http://localhost:5173`).
-
-Validation CLI (fictional fixtures, not the CMS extract):
-
-```bash
-npm run validate -- tests/fixtures/simulated-cost-reports.json
 ```

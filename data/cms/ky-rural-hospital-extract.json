@@ -1,7 +1,15 @@
 {
-  "disclaimer": "Public CMS HCRIS-derived hospital summaries compiled for the PulseLine hackathon vertical slice. Dollar figures are rounded public totals, not line-item cents from a full CMS-2552 worksheet. This is not the pending research pack (Shadow_Revenue_source_pack.md / hospital_cost_report_candidates.json). Values were not invented; missing worksheet lines remain null.",
-  "source": "CMS Hospital Cost Report (HCRIS) public summaries via hcris.io, accessed 2026-09-11. Underlying source is CMS HCRIS.",
+  "disclaimer": "Public HCRIS-derived hospital summaries transcribed for a PulseLine prototype. Dollar figures are rounded public totals, not CMS-2552 line-item cents. Total revenues/costs/net income are not operating revenue/expense/income. Source verification against official CMS files is pending.",
+  "source": "Public hospital cost-report summaries on hcris.io (CMS HCRIS-derived), accessed 2026-09-11. Official CMS HCRIS RPT/NMRC files and the Hospital Provider Cost Report PUF were not independently downloaded and line-matched in this repository.",
   "retrievedAt": "2026-09-11",
+  "sourceVerification": "pending",
+  "missingEvidence": [
+    "Official CMS HCRIS RPT, NMRC, and alphanumeric files were not downloaded or joined on RPT_REC_NUM.",
+    "CMS Hospital Provider Cost Report PUF rows were not independently retrieved for CCNs 180139, 180069, and 180154.",
+    "CMS-2552 worksheet G-3 operating revenue, operating expense, and operating income lines are not in this repository.",
+    "Fiscal year begin dates were not published on the summary pages and remain unknown.",
+    "The CMS cost-report street '400 Jett Drive' was retained from the PulseLine identity-review brief; the official HCRIS street line was not independently re-downloaded."
+  ],
   "observations": [
     {
       "id": "ky-180139",
@@ -19,15 +27,28 @@
       "cmsCostReportAddress": "400 Jett Drive",
       "otherDirectoryAddress": "540 Jett Drive",
       "dataQualityWarnings": [],
+      "addressEvidence": [
+        {
+          "role": "cms_cost_report",
+          "address": "400 Jett Drive",
+          "source": "PulseLine identity-review brief (historical CMS cost-report street). Official HCRIS alphanumeric street line not independently re-downloaded.",
+          "retrievedAt": "2026-09-11",
+          "verification": "pending"
+        },
+        {
+          "role": "other_directory",
+          "address": "540 Jett Drive",
+          "source": "Public hospital directories listing 540 Jett Drive, Jackson, KY 41339 (healthcare4ppl.com/hospital/kentucky/jackson/kentucky-river-medical-center-180139.html; turquoise.health provider page), accessed 2026-09-11.",
+          "retrievedAt": "2026-09-11",
+          "verification": "supported"
+        }
+      ],
       "provenance": {
-        "source": "CMS HCRIS public hospital cost-report summary (hcris.io/hospital/180139)",
+        "source": "Public HCRIS-derived summary (hcris.io/hospital/180139), accessed 2026-09-11",
         "retrievedAt": "2026-09-11",
-        "notes": "Rounded totals. Fiscal year start was not published on the summary page and is left null. Address discrepancy is recorded for identity review only; it does not imply a physician departure."
+        "notes": "Rounded totals. Fiscal year start unpublished and left null. total_revenues/total_costs/net_income are preserved as source fields only and are not mapped to operatingRevenue/operatingExpenses/operatingIncome. classification=observed means the values were transcribed from a public summary, not that CMS worksheets were re-verified."
       },
       "sourceFieldMap": {
-        "operatingRevenue": "hcris.total_revenues",
-        "operatingExpenses": "hcris.total_costs",
-        "operatingIncome": "hcris.net_income",
         "operatingMargin": "hcris.operating_margin",
         "totalAssets": "hcris.total_assets",
         "totalLiabilities": "hcris.total_liabilities",
@@ -55,9 +76,9 @@
       },
       "financials": {
         "netPatientRevenue": null,
-        "operatingRevenue": 35300000,
-        "operatingExpenses": 34500000,
-        "operatingIncome": 1800000,
+        "operatingRevenue": null,
+        "operatingExpenses": null,
+        "operatingIncome": null,
         "operatingMargin": 0.05,
         "totalAssets": 9000000,
         "totalLiabilities": 5200000,
@@ -73,7 +94,7 @@
       "identityDiscrepancies": [
         {
           "kind": "address_change",
-          "description": "Historical CMS cost-report address is 400 Jett Drive. Other directory listings use 540 Jett Drive. This is an identity discrepancy only and does not prove a physician departure.",
+          "description": "Historical CMS cost-report address is 400 Jett Drive. Other directory listings accessed 2026-09-11 use 540 Jett Drive. This is an identity discrepancy only and does not prove a physician departure.",
           "resolved": false
         }
       ]
@@ -94,15 +115,13 @@
       "cmsCostReportAddress": null,
       "otherDirectoryAddress": null,
       "dataQualityWarnings": [],
+      "addressEvidence": [],
       "provenance": {
-        "source": "CMS HCRIS public hospital cost-report summary (hcris.io/hospital/180069)",
+        "source": "Public HCRIS-derived summary (hcris.io/hospital/180069), accessed 2026-09-11",
         "retrievedAt": "2026-09-11",
-        "notes": "Rounded totals. Published total liabilities are negative and are preserved as published. Fiscal year start was not on the summary page."
+        "notes": "Rounded totals. Published total liabilities are negative and preserved. total_revenues/total_costs/net_income are not mapped to operating fields. Fiscal year start unknown."
       },
       "sourceFieldMap": {
-        "operatingRevenue": "hcris.total_revenues",
-        "operatingExpenses": "hcris.total_costs",
-        "operatingIncome": "hcris.net_income",
         "operatingMargin": "hcris.operating_margin",
         "totalAssets": "hcris.total_assets",
         "totalLiabilities": "hcris.total_liabilities",
@@ -128,9 +147,9 @@
       },
       "financials": {
         "netPatientRevenue": null,
-        "operatingRevenue": 50500000,
-        "operatingExpenses": 64900000,
-        "operatingIncome": -3000000,
+        "operatingRevenue": null,
+        "operatingExpenses": null,
+        "operatingIncome": null,
         "operatingMargin": -0.059,
         "totalAssets": 30200000,
         "totalLiabilities": -28700000,
@@ -161,15 +180,13 @@
       "cmsCostReportAddress": null,
       "otherDirectoryAddress": null,
       "dataQualityWarnings": [],
+      "addressEvidence": [],
       "provenance": {
-        "source": "CMS HCRIS public hospital cost-report summary (hcris.io/hospital/180154)",
+        "source": "Public HCRIS-derived summary (hcris.io/hospital/180154), accessed 2026-09-11",
         "retrievedAt": "2026-09-11",
-        "notes": "Rounded totals. Fiscal year start was not published on the summary page and is left null."
+        "notes": "Rounded totals. total_revenues/total_costs/net_income are not mapped to operating fields. Fiscal year start unknown."
       },
       "sourceFieldMap": {
-        "operatingRevenue": "hcris.total_revenues",
-        "operatingExpenses": "hcris.total_costs",
-        "operatingIncome": "hcris.net_income",
         "operatingMargin": "hcris.operating_margin",
         "totalAssets": "hcris.total_assets",
         "totalLiabilities": "hcris.total_liabilities",
@@ -195,9 +212,9 @@
       },
       "financials": {
         "netPatientRevenue": null,
-        "operatingRevenue": 26600000,
-        "operatingExpenses": 45600000,
-        "operatingIncome": -17300000,
+        "operatingRevenue": null,
+        "operatingExpenses": null,
+        "operatingIncome": null,
         "operatingMargin": -0.652,
         "totalAssets": 23100000,
         "totalLiabilities": 22800000,

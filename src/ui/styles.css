@@ -9,6 +9,7 @@
   --watch: #d39b2f;
   --stable: #6f8f6a;
   --pending: #8b8173;
+  --insufficient: #8b8173;
 }
 
 * {
@@ -139,6 +140,10 @@ h3 {
   border-top-color: var(--stable);
 }
 
+.hospital-card.status-insufficient {
+  border-top-color: var(--insufficient);
+}
+
 .hospital-card:hover,
 .hospital-card:focus-visible {
   border-color: var(--gold);
@@ -190,9 +195,19 @@ h3 {
   background: #243322;
 }
 
-.status-pending {
+.status-pending,
+.status-insufficient {
   color: #efe6d6;
   background: #3a342c;
+}
+
+.extract-error {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.extract-error li {
+  color: #ffd8c4;
 }
 
 .snapshot article,
@@ -298,6 +313,11 @@ h3 {
   background: var(--stable);
 }
 
+.score-meter.status-insufficient .score-meter-bar span {
+  background: var(--insufficient);
+  width: 0;
+}
+
 .signal-list,
 .reason-list {
   list-style: none;
@@ -329,9 +349,84 @@ h3 {
   margin: 0 0 8px;
 }
 
+.report-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.report-btn {
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 6px 8px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.report-btn.active,
+.report-btn:focus-visible {
+  border-color: var(--gold);
+}
+
+.drawer a {
+  color: var(--gold);
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+}
+
+.timeline-group + .timeline-group,
+.timeline-card + .timeline-card {
+  margin-top: 16px;
+}
+
+.timeline-card {
+  background: var(--ink-2);
+  border: 1px solid var(--rule);
+  padding: 16px;
+}
+
+.timeline a {
+  color: var(--gold);
+}
+
 @media (max-width: 720px) {
   .overview-grid,
-  .meta-list {
+  .meta-list,
+  .card-grid,
+  .snapshot-grid {
     grid-template-columns: 1fr;
+  }
+
+  .card-top,
+  .signal-head {
+    flex-direction: column;
+  }
+
+  .report-switcher {
+    flex-direction: column;
+  }
+
+  .report-btn {
+    width: 100%;
+  }
+
+  .drawer {
+    width: 100%;
+  }
+
+  .page {
+    width: calc(100% - 16px);
+    padding: 20px 0 64px;
+  }
+
+  h1 {
+    font-size: 2.6rem;
   }
 }

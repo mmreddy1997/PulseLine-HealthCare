@@ -1,0 +1,398 @@
+{
+  "schema_version": "0.1.0",
+  "status": "partial_research_handoff_not_production_import",
+  "created_date": "2026-09-11",
+  "purpose": "Explainable evidence of hospital pressure and community vulnerability; no predictive validity claimed.",
+  "cohort_policy": "Additional case-study cohort; preserve existing Morgan/Breckinridge/Kentucky River dashboard.",
+  "hospitals": [
+    {
+      "hospital_id": "KY-LIC-100620",
+      "name": "Kentucky River Medical Center",
+      "city": "Jackson",
+      "identity_status": "existing_research_id",
+      "ccn_at_event": null,
+      "provider_chow": "unknown"
+    },
+    {
+      "hospital_id": "case_paul_b_hall",
+      "name": "Paul B. Hall Regional Medical Center / Paintsville ARH Hospital",
+      "city": "Paintsville",
+      "identity_status": "internal_case_id_pending_CMS_crosswalk",
+      "ccn_at_event": null,
+      "provider_chow": "unknown"
+    },
+    {
+      "hospital_id": "case_highlands",
+      "name": "Highlands Regional Medical Center / Highlands ARH Regional Medical Center",
+      "city": "Prestonsburg",
+      "identity_status": "internal_case_id_pending_CMS_crosswalk",
+      "ccn_at_event": null,
+      "provider_chow": "unknown"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "highlands_arh",
+      "url": "https://providers.arh.org/location/highlands-arh-regional-medical-center/loc0000132808",
+      "title": "ARH facility profile",
+      "publication_date": null,
+      "source_type": "primary_current_retrospective",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "paintsville_arh",
+      "url": "https://providers.arh.org/location/paintsville-arh-hospital/loc0000131084",
+      "title": "ARH facility profile",
+      "publication_date": null,
+      "source_type": "primary_current_retrospective",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "paintsville_close",
+      "url": "https://www.wsaz.com/2021/12/01/appalachian-regional-healthcare-finalizes-purchase-paul-b-hall-regional-medical-center/",
+      "title": "WSAZ acquisition report",
+      "publication_date": "2021-12-01",
+      "source_type": "secondary_contemporaneous",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "paintsville_plan",
+      "url": "https://www.wymt.com/2021/09/23/arh-buy-paul-b-hall-regional-medical-center/",
+      "title": "WYMT agreement announcement",
+      "publication_date": "2021-09-23",
+      "source_type": "secondary_contemporaneous",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "nhi_sale",
+      "url": "https://www.sec.gov/Archives/edgar/data/877860/000087786021000075/item991-q32021earningsrele.htm",
+      "title": "NHI Q3 earnings release",
+      "publication_date": "2021-11-08",
+      "source_type": "primary_sec",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "juniper_sale",
+      "url": "https://juniperadvisory.com/transactions/kentucky-river-in-jackson-ky/",
+      "title": "Juniper transaction announcement",
+      "publication_date": "2021-11-04",
+      "source_type": "primary_transaction_adviser",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "quorum_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1650445/000156459020016238/qhc-10k_20191231.htm",
+      "title": "Quorum 2019 10-K",
+      "publication_date": null,
+      "source_type": "primary_sec",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "quorum_emergence",
+      "url": "https://www.sec.gov/Archives/edgar/data/1650445/000119312520188872/d942866d8k.htm",
+      "title": "Quorum emergence 8-K",
+      "publication_date": null,
+      "source_type": "primary_sec",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "jackson_court",
+      "url": "https://document.epiq11.com/document/getdocumentbycode/?docId=3645943&projectCode=QMH&source=DM",
+      "title": "Joint administration court order",
+      "publication_date": "2020-04-08",
+      "source_type": "primary_court_document",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "highlands_chna",
+      "url": "https://www.arh.org/wp-content/uploads/2020/10/FINAL_HighlandsRMC_CHNA_2019.pdf",
+      "title": "Highlands 2019 CHNA",
+      "publication_date": null,
+      "source_type": "primary_hospital_report_secondary_statistics",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "ahrf",
+      "url": "https://data.hrsa.gov/data/download?AHRF=&data=AHRF",
+      "title": "HRSA AHRF downloads",
+      "publication_date": null,
+      "source_type": "primary_collection_endpoint",
+      "access_date": "2026-09-11"
+    },
+    {
+      "source_id": "acs",
+      "url": "https://www.census.gov/data/developers/data-sets/acs-5year.html?lv=true",
+      "title": "Census ACS five-year data",
+      "publication_date": null,
+      "source_type": "primary_collection_endpoint",
+      "access_date": "2026-09-11"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "highlands_acquisition_2019",
+      "hospital_id": "case_highlands",
+      "event_category": "acquisition",
+      "event_subtype": "hospital_and_operations",
+      "event_status": "verified",
+      "effective_date": "2019-08-01",
+      "effective_date_precision": "day",
+      "announcement_date": null,
+      "source_ids": [
+        "highlands_arh"
+      ],
+      "buyer": "Appalachian Regional Healthcare",
+      "seller": null,
+      "scope": "hospital",
+      "event_confidence": "high",
+      "identity_confidence": "high",
+      "verified_outcome": true,
+      "notes": "ARH confirms acquisition date. Seller legal entity, CMS CHOW and earliest public announcement remain unverified. Rename belongs to this event group.",
+      "ccn_at_event": null,
+      "prediction_cutoff": null,
+      "experimental_signal": false,
+      "available_before_cutoff": "not_assessed",
+      "event_group": "highlands_acquisition_2019"
+    },
+    {
+      "event_id": "paintsville_acquisition_2021",
+      "hospital_id": "case_paul_b_hall",
+      "event_category": "acquisition",
+      "event_subtype": "hospital_and_operations",
+      "event_status": "verified",
+      "effective_date": "2021-12-01",
+      "effective_date_precision": "day",
+      "announcement_date": "2021-09-23",
+      "source_ids": [
+        "paintsville_arh",
+        "paintsville_close",
+        "paintsville_plan"
+      ],
+      "buyer": "Appalachian Regional Healthcare",
+      "seller": null,
+      "scope": "hospital",
+      "event_confidence": "high",
+      "identity_confidence": "high",
+      "verified_outcome": true,
+      "notes": "Official ARH page confirms December; contemporaneous reporting confirms day and operations. September 23 is earliest announcement located, not established earliest. Rename is same event group.",
+      "ccn_at_event": null,
+      "prediction_cutoff": null,
+      "experimental_signal": false,
+      "available_before_cutoff": "not_assessed",
+      "event_group": "paintsville_acquisition_2021"
+    },
+    {
+      "event_id": "kr_property_sale_2021",
+      "hospital_id": "KY-LIC-100620",
+      "event_category": "property_transaction",
+      "event_subtype": "facility_real_estate_sale",
+      "event_status": "verified",
+      "effective_date": "2021-09",
+      "effective_date_precision": "month",
+      "announcement_date": "2021-11-04",
+      "source_ids": [
+        "nhi_sale",
+        "juniper_sale"
+      ],
+      "buyer": "Quorum Health",
+      "seller": "National Health Investors",
+      "scope": "property",
+      "event_confidence": "high",
+      "identity_confidence": "high",
+      "verified_outcome": true,
+      "notes": "Announcement field is adviser announcement, not first public disclosure. SEC reports September sale for $9m including $0.7m transaction costs and approximately $1.3m net loss. Do not relabel net loss as impairment. Provider CHOW remains unknown.",
+      "ccn_at_event": null,
+      "prediction_cutoff": null,
+      "experimental_signal": false,
+      "available_before_cutoff": "not_assessed",
+      "event_group": "kr_property_sale_2021"
+    },
+    {
+      "event_id": "quorum_bankruptcy_2020",
+      "hospital_id": "KY-LIC-100620",
+      "event_category": "parent_bankruptcy",
+      "event_subtype": "chapter_11",
+      "event_status": "verified_parent_event",
+      "effective_date": "2020-04-07",
+      "effective_date_precision": "day",
+      "announcement_date": null,
+      "source_ids": [
+        "quorum_filing",
+        "jackson_court"
+      ],
+      "buyer": null,
+      "seller": null,
+      "scope": "parent_and_named_debtors",
+      "event_confidence": "high",
+      "identity_confidence": "partial",
+      "verified_outcome": false,
+      "notes": "Quorum and subsidiaries filed. Court list includes Jackson Hospital Corporation case 20-10834. Facility-to-legal-debtor crosswalk still needs direct evidence; do not label Kentucky River itself a verified hospital bankruptcy or closure.",
+      "ccn_at_event": null,
+      "prediction_cutoff": null,
+      "experimental_signal": false,
+      "available_before_cutoff": "not_assessed",
+      "event_group": "quorum_bankruptcy_2020"
+    },
+    {
+      "event_id": "quorum_emergence_2020",
+      "hospital_id": "KY-LIC-100620",
+      "event_category": "parent_restructuring",
+      "event_subtype": "chapter_11_emergence",
+      "event_status": "verified_parent_event",
+      "effective_date": "2020-07-07",
+      "effective_date_precision": "day",
+      "announcement_date": null,
+      "source_ids": [
+        "quorum_emergence"
+      ],
+      "buyer": null,
+      "seller": null,
+      "scope": "parent",
+      "event_confidence": "high",
+      "identity_confidence": "partial",
+      "verified_outcome": false,
+      "notes": "Quorum emerged under Quincy Health LLC. Parent restructuring is not a verified facility CHOW, service reduction or closure.",
+      "ccn_at_event": null,
+      "prediction_cutoff": null,
+      "experimental_signal": false,
+      "available_before_cutoff": "not_assessed",
+      "event_group": "quorum_emergence_2020"
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "highlands_population_2017",
+      "hospital_id": "case_highlands",
+      "domain": "community",
+      "metric": "population",
+      "value": 36271,
+      "unit": "people",
+      "reporting_period": "2017",
+      "scope": "county:Floyd",
+      "source_ids": [
+        "highlands_chna"
+      ],
+      "source_page": "10",
+      "publication_date": null,
+      "access_date": "2026-09-11",
+      "identity_confidence": "high",
+      "evidence_class": "reported_observation",
+      "extraction_status": "text_checked_visual_check_unavailable",
+      "historical_feature_eligible": false,
+      "limitations": "Publication date unverified; retrospective context only. County values describe geography, not hospital staffing. No trend inferred from a single level."
+    },
+    {
+      "observation_id": "highlands_population_change",
+      "hospital_id": "case_highlands",
+      "domain": "community",
+      "metric": "population_change",
+      "value": -8.1,
+      "unit": "percent",
+      "reporting_period": "2010–2017",
+      "scope": "county:Floyd",
+      "source_ids": [
+        "highlands_chna"
+      ],
+      "source_page": "10",
+      "publication_date": null,
+      "access_date": "2026-09-11",
+      "identity_confidence": "high",
+      "evidence_class": "reported_observation",
+      "extraction_status": "text_checked_visual_check_unavailable",
+      "historical_feature_eligible": false,
+      "limitations": "Publication date unverified; retrospective context only. County values describe geography, not hospital staffing. No trend inferred from a single level."
+    },
+    {
+      "observation_id": "highlands_older_population",
+      "hospital_id": "case_highlands",
+      "domain": "community",
+      "metric": "population_age_65_plus",
+      "value": 17.8,
+      "unit": "percent",
+      "reporting_period": "2017",
+      "scope": "county:Floyd",
+      "source_ids": [
+        "highlands_chna"
+      ],
+      "source_page": "10",
+      "publication_date": null,
+      "access_date": "2026-09-11",
+      "identity_confidence": "high",
+      "evidence_class": "reported_observation",
+      "extraction_status": "text_checked_visual_check_unavailable",
+      "historical_feature_eligible": false,
+      "limitations": "Publication date unverified; retrospective context only. County values describe geography, not hospital staffing. No trend inferred from a single level."
+    },
+    {
+      "observation_id": "highlands_pcp_ratio",
+      "hospital_id": "case_highlands",
+      "domain": "workforce_access",
+      "metric": "population_per_primary_care_provider",
+      "value": 1800,
+      "unit": "people_per_provider",
+      "reporting_period": null,
+      "scope": "county:Floyd",
+      "source_ids": [
+        "highlands_chna"
+      ],
+      "source_page": "12",
+      "publication_date": null,
+      "access_date": "2026-09-11",
+      "identity_confidence": "high",
+      "evidence_class": "reported_observation",
+      "extraction_status": "text_checked_visual_check_unavailable",
+      "historical_feature_eligible": false,
+      "limitations": "Publication date unverified; retrospective context only. County values describe geography, not hospital staffing. No trend inferred from a single level."
+    },
+    {
+      "observation_id": "highlands_licensed_beds",
+      "hospital_id": "case_highlands",
+      "domain": "operational",
+      "metric": "licensed_beds",
+      "value": 192,
+      "unit": "beds",
+      "reporting_period": "2019 report; exact census date unknown",
+      "scope": "hospital",
+      "source_ids": [
+        "highlands_chna"
+      ],
+      "source_page": "8",
+      "publication_date": null,
+      "access_date": "2026-09-11",
+      "identity_confidence": "high",
+      "evidence_class": "reported_observation",
+      "extraction_status": "text_checked_visual_check_unavailable",
+      "historical_feature_eligible": false,
+      "limitations": "Publication date unverified; retrospective context only. County values describe geography, not hospital staffing. No trend inferred from a single level."
+    }
+  ],
+  "calculated_measures": [],
+  "experimental_signals": [],
+  "mock_values": [],
+  "comparison_hospitals": [],
+  "domain_coverage": {
+    "financial": "Existing Kentucky River pack not copied or reverified in this deliverable; pre-event CMS panel for all three remains outstanding.",
+    "operational": "One Highlands bed count; comparable time series outstanding.",
+    "workforce_access": "One county access ratio; workforce changes, AHRF and historical HPSA pending.",
+    "community": "Three Floyd County observations; comparable multi-county profiles pending.",
+    "structural": "Two acquisitions, one property sale, two parent events with explicit scope limits."
+  },
+  "rules": [
+    "Unknown is not zero or no-event.",
+    "Publication and effective dates must be distinct; preserve date precision.",
+    "Exclude unavailable or undated vintages from historical features.",
+    "Never reuse the target event as a predictive feature.",
+    "Keep county vulnerability outside hospital financial score.",
+    "Do not count correlated ratios or rename/acquisition twice.",
+    "Use immutable source versions for historical tests."
+  ],
+  "open_research": [
+    "Verify facility-to-legal-entity and CCN crosswalks at each event.",
+    "Locate earliest public deal disclosures and exact publication dates.",
+    "Retrieve comparable pre-event CMS reports with publication evidence.",
+    "Verify NHI potential impairment from official 2020 filing; excluded from verified ledger here.",
+    "Investigate provider CHOW, closure, service reduction and outcomes rather than assuming absent.",
+    "Retrieve dated AHRF/HPSA and ACS vintages for relevant county/service areas.",
+    "Build matched controls with documented outcome searches and equivalent follow-up."
+  ]
+}
