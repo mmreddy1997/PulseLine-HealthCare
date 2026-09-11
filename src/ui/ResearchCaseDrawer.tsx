@@ -51,7 +51,7 @@ export function ResearchCaseDrawer({
       <div className="drawer-backdrop" onClick={onClose} />
       <aside ref={panelRef} className="drawer" role="dialog" aria-modal="true" aria-labelledby="research-drawer-title">
         <header className="drawer-header">
-          <p className="eyebrow">Research case · financial coverage pending</p>
+          <p className="eyebrow">Research case · financial data pending</p>
           <h2 id="research-drawer-title">{hospital.name}</h2>
           <p className="muted">
             {hospital.city} · {hospital.hospitalId}
@@ -66,8 +66,8 @@ export function ResearchCaseDrawer({
         </header>
 
         <section>
-          <h3>Financial coverage</h3>
-          <p className="status-pill status-pending">Pending</p>
+          <h3>Financial data pending</h3>
+          <p className="status-pill status-pending">Financial data pending</p>
           <p className="muted small">
             No CCN, Kentucky license ID, cost-report financials, or stress score were invented for this case.
           </p>

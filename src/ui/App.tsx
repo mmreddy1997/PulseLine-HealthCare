@@ -166,10 +166,10 @@ export function App() {
               >
                 <div className="card-top">
                   <h3>{hospital.name}</h3>
-                  <span className="status-pill status-pending">PENDING</span>
+                  <span className="status-pill status-pending">FINANCIAL DATA PENDING</span>
                 </div>
                 <p className="muted">{hospital.city} · {hospital.hospitalId}</p>
-                <p className="tiny">CCN at event unknown · provider CHOW {hospital.providerChow}</p>
+                <p className="tiny">No score assigned · CCN at event unknown · provider CHOW {hospital.providerChow}</p>
                 <p className="tiny">Identity {hospital.identityStatus.replaceAll("_", " ")}</p>
               </button>
             ))}
