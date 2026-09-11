@@ -88,3 +88,104 @@ export interface BatchValidationResult {
   errors: ValidationIssue[];
   warnings: ValidationIssue[];
 }
+
+/** Nullable financial observation. Missing is null, never coerced to zero. */
+export interface HospitalFinancials {
+  netPatientRevenue: number | null;
+  operatingRevenue: number | null;
+  operatingExpenses: number | null;
+  operatingIncome: number | null;
+  operatingMargin: number | null;
+  totalAssets: number | null;
+  totalLiabilities: number | null;
+  currentAssets: number | null;
+  currentLiabilities: number | null;
+  cash: number | null;
+  inpatientDays: number | null;
+  discharges: number | null;
+  availableBeds: number | null;
+  bedDaysAvailable: number | null;
+  uncompensatedCare: number | null;
+}
+
+export interface HospitalDataQuality {
+  identityStatus: IdentityReviewStatus;
+  missingFields: string[];
+  warnings: string[];
+  source: string;
+  cmsCostReportAddress: string | null;
+  otherDirectoryAddress: string | null;
+}
+
+/**
+ * Normalized hospital used by scoring and the dashboard.
+ * Extends the validated cost-report observation; it does not replace it.
+ */
+export interface Hospital {
+  id: string;
+  ccn: CmsCcn;
+  name: string;
+  city: string;
+  state: string;
+  zip: string | null;
+  county: string | null;
+  address: string | null;
+  fiscalYearStart: string | null;
+  fiscalYearEnd: string;
+  financials: HospitalFinancials;
+  dataQuality: HospitalDataQuality;
+  /** PulseLine field → original CMS / HCRIS field name. */
+  sourceFieldMap: Record<string, string>;
+  sourceFields: Record<string, unknown>;
+  identityDiscrepancies: IdentityDiscrepancy[];
+  classification: ObservationClassification;
+  provenance: Provenance;
+}
+
+export type WorkforceStatus = "not_available" | "simulated" | "real";
+
+export interface WorkforceSignal {
+  status: WorkforceStatus;
+  summary: string;
+  explanation: string;
+}
+
+export type FinancialStatus = "Stable" | "Watch" | "High Concern";
+export type ConfidenceLevel = "Low" | "Moderate" | "High";
+
+export interface ScoreFactor {
+  metric: string;
+  rawValue: number | null;
+  normalizedRisk: number | null;
+  weight: number;
+  reason: string;
+  source: string;
+  available: boolean;
+}
+
+export interface FinancialDistressResult {
+  score: number;
+  status: FinancialStatus;
+  confidence: ConfidenceLevel;
+  factors: ScoreFactor[];
+  missingInputs: string[];
+  limitations: string[];
+}
+
+export type PulseSeverity = "not_triggered" | "insufficient_evidence" | "watch" | "high";
+
+export interface PulseLineSignal {
+  triggered: boolean;
+  severity: PulseSeverity;
+  reasons: string[];
+  availableSignals: string[];
+  missingSignals: string[];
+  limitations: string[];
+}
+
+export interface HospitalView {
+  hospital: Hospital;
+  financial: FinancialDistressResult;
+  workforce: WorkforceSignal;
+  pulse: PulseLineSignal;
+}

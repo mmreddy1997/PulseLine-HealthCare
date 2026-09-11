@@ -1,58 +1,103 @@
 # PulseLine
 
-Early Warning Intelligence for Rural Healthcare.
+Early Warning Intelligence for Rural Healthcare
 
-PulseLine monitors Kentucky hospital and service-line distress so operators can see strain before it becomes a crisis. It is an exploratory decision-support project for county and state healthcare leadership. It is **not** a validated bankruptcy, closure, or 6–12-month prediction model. Financial distress, service reductions, closure, conversion, acquisition, and bankruptcy are separate outcomes.
+Detecting emerging financial and workforce instability before healthcare access deteriorates.
 
-## What exists now
+## Problem
 
-This increment is a local **data-validation foundation** only:
+Rural and safety-net hospitals can lose service lines, convert, or close after financial strain has already been visible in public filings. County and state healthcare leaders often see those signals too late, and in fragments.
 
-- TypeScript contracts for hospital identity (including a six-digit CMS CCN stored as a string), cost-report observations, provenance, missing-data notes, and identity discrepancies.
-- A validator that accepts unknown JSON, returns structured errors and warnings, and rejects invalid input without silently repairing it.
-- Small, clearly fictional simulated fixtures under `tests/fixtures`. They are not CMS observations.
-- A CLI that validates a JSON file and exits unsuccessfully when validation fails.
-- Automated tests and a typecheck script.
+## Product hypothesis
 
-The dashboard, maps, authentication, live NPPES lookup, invented financial metrics, and risk scoring are **not implemented**.
+If Kentucky leaders can see **transparent financial distress** next to **honest data-quality limits**, they can investigate access risk earlier. A second signal — longitudinal workforce instability from historical NPPES snapshots — is planned. PulseLine will not treat a single financial ratio, or a missing workforce feed, as proof of closure or bankruptcy.
 
-Research extracts such as `Shadow_Revenue_source_pack.md` and `hospital_cost_report_candidates.json` are **not in this repository yet**. The schema here is provisional until a verified extract is inspected.
+## Target users
 
-## Setup
+County and state healthcare leadership in Kentucky. This is exploratory decision support, not a bedside or credit-rating tool.
 
-Requires Node.js 20 or later.
+## Current architecture
 
-```bash
-npm install
-```
+1. **Validation foundation** (`src/validate.ts`, `src/types.ts`) — unknown JSON in, structured errors/warnings out. Existing fictional fixtures stay under `tests/fixtures`.
+2. **CMS extract** (`data/cms/ky-rural-hospital-extract.json`) — three observed Kentucky hospital summaries derived from public CMS HCRIS totals. Original field names are preserved in `sourceFields` / `sourceFieldMap`.
+3. **Normalization** (`lib/normalize-hospital.ts`) — maps the extract to the hospital model. Missing financials stay null.
+4. **Financial distress engine** (`lib/score-financial.ts`, thresholds in `lib/scoring-config.ts`).
+5. **Workforce placeholder** (`lib/workforce.ts`) — `workforceStatus = "not_available"`.
+6. **PulseLine signal** (`lib/pulse-signal.ts`) — will not trigger on finance alone.
+7. **Dashboard** (`src/ui`) — Vite + React hospital radar, deep-dive drawer, methodology panel.
 
-## Commands
+## Data sources
 
-```bash
-npm test
-npm run typecheck
-npm run validate -- tests/fixtures/simulated-cost-reports.json
-```
+- Public CMS Hospital Cost Report (HCRIS) summaries for:
+  - Kentucky River Medical Center (CCN `180139`)
+  - Tug Valley ARH (CCN `180069`)
+  - Pineville Community Health Center (CCN `180154`)
+- Dollar figures are **rounded public totals**, not full CMS-2552 line-item cents.
+- `Shadow_Revenue_source_pack.md` and `hospital_cost_report_candidates.json` are **not in the repository yet**. This schema is provisional until that extract is inspected.
+- Simulated validator fixtures in `tests/fixtures` are fictional and are not CMS observations.
 
-`npm run validate -- <file.json>` prints errors and warnings. It exits with a non-zero status when validation fails.
+## Scoring methodology
 
-## Validation rules
+Configurable in `lib/scoring-config.ts`. The UI does not hardcode thresholds.
 
-- Required hospital and fiscal-period fields must be present.
-- CMS CCN must be a six-digit **string** so leading zeroes are preserved. Numbers are rejected, not coerced.
-- Records must be in Kentucky (`KY` or `Kentucky`).
-- Fiscal dates must be real calendar dates in `YYYY-MM-DD` form, and start must be on or before end.
-- Null source values stay null. Missing financial values are never treated as zero.
-- Unresolved identity review is a warning, not an automatic reject.
-- A provider address change is an identity discrepancy only. It does not prove a physician departure.
+Available factors (used only when the extract actually has the inputs):
+
+| Factor | Construction | Direction |
+| --- | --- | --- |
+| Operating margin | Reported HCRIS operating margin | Lower is riskier |
+| Revenue / expense pressure | `total_costs / total_revenues` | Higher is riskier |
+| Liabilities / assets | `total_liabilities / total_assets` | Higher is riskier; skipped if liabilities are negative |
+| Current ratio | current assets / current liabilities | Lower is riskier |
+| Cash / liquidity | cash / operating expenses | Lower is riskier |
+| Patient volume | inpatient days / bed days available | Lower is riskier |
+
+Each available factor is linearly scaled to 0–100 risk between its `healthy` and `concern` anchors. The hospital score is the **weight-renormalized average** of available factors, rounded to an integer 0–100.
+
+- 0–39 Stable
+- 40–69 Watch
+- 70–100 High Concern
+
+Confidence is Low / Moderate / High from the count of available factors.
 
 ## Limitations
 
-- No verified CMS data has been imported.
-- Fixtures under `tests/fixtures` are simulated and unmistakably fictional.
-- This is not a bankruptcy or closure predictor.
-- Invalid input is rejected as-is; the validator does not pad CCNs, swap dates, or fill missing money fields.
+- Not a validated bankruptcy, closure, or 6–12-month forecast.
+- Financial distress, service reductions, closure, conversion, acquisition, and bankruptcy are separate outcomes.
+- NPPES does not establish hospital employment.
+- A practice-location or address change does not prove a physician departure.
+- Current assets, current liabilities, cash, and net patient revenue are **not in this extract** and are shown as unavailable, not zero.
+- Three hospitals demonstrate workflow, not predictive validity.
+- Combined PulseLine signal stays off until a longitudinal workforce feed exists.
 
-## Next step
+## Current MVP status
 
-Import verified CMS research data (when those source files are available) through an adapter that preserves raw extracts. Do not invent their contents here.
+Working vertical slice:
+
+CMS hospital summaries → normalize → financial score → dashboard → hospital deep dive → deterministic explanation.
+
+Not implemented: AI policy memo, PDF, map, auth, database, live NPPES detector, nationwide coverage, ML model.
+
+## Next planned signal
+
+NPPES workforce instability, using **historical snapshots**. Do not fabricate migration data before those snapshots exist.
+
+## How to run locally
+
+Requires Node.js 20+.
+
+```bash
+npm install
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm run dev
+```
+
+Then open the local Vite URL (usually `http://localhost:5173`).
+
+Validation CLI (fictional fixtures, not the CMS extract):
+
+```bash
+npm run validate -- tests/fixtures/simulated-cost-reports.json
+```
