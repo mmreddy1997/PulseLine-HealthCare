@@ -37,14 +37,45 @@ export function App() {
       <header className="hero">
         <p className="brand-kicker">Kentucky · Rural / safety-net</p>
         <h1>PulseLine</h1>
-        <p className="tagline">Early Warning Intelligence for Rural Healthcare</p>
+        <p className="tagline">Understand financial pressure at rural Kentucky hospitals</p>
         <p className="lede">
-          A historical financial prototype using 12 researched CMS cost reports for Breckinridge Memorial, Morgan County
-          ARH, and Kentucky River, plus a separate sourced structural-event timeline. It does not detect workforce
-          instability and is not a validated early-warning or bankruptcy model. Five-domain research and matched
-          controls remain pending.
+          PulseLine is an experimental dashboard for county and state healthcare leaders exploring hospital financial
+          conditions and the evidence behind them.
+        </p>
+        <p className="lede">
+          Explore three hospitals with historical CMS financial reports and two additional research cases with documented
+          structural events.
         </p>
       </header>
+
+      <section className="howto" aria-labelledby="howto-title">
+        <h2 id="howto-title">How to use PulseLine</h2>
+        <ol className="howto-steps">
+          <li>
+            <strong>Choose a hospital.</strong> Open its card to see financial measures, data coverage, and explanations.
+          </li>
+          <li>
+            <strong>Understand the score.</strong> Higher scores indicate greater financial concern under our experimental
+            scoring rules. A score is not a probability of closure or bankruptcy.
+          </li>
+          <li>
+            <strong>Compare reporting years.</strong> Select an earlier report to explore how the available measures
+            changed.
+          </li>
+          <li>
+            <strong>Check the evidence.</strong> Follow source links and review missing data, identity questions, and
+            event details.
+          </li>
+        </ol>
+        <h3>What to keep in mind</h3>
+        <p className="muted">
+          These are historical reports, not live hospital conditions. “Financial data pending” means no score has been
+          assigned. Acquisitions, property sales, and parent-company events are shown separately from financial scores.
+        </p>
+        <p className="muted">
+          PulseLine helps identify questions for further investigation. It does not predict bankruptcy or closure.
+        </p>
+      </section>
 
       {!loaded.ok ? (
         <section className="extract-error" role="alert">
