@@ -33,6 +33,7 @@ export function HospitalExplorer({
   const [mapFocus, setMapFocus] = useState<"kentucky" | "area" | "hospital">("kentucky");
   const [visibleIndex, setVisibleIndex] = useState(0);
   const [listOpen, setListOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const result = useMemo(() => {
     const filtered = filterExplorerHospitals(hospitals, filtersForArea(area), KY_COUNTY_NAMES);
@@ -80,6 +81,8 @@ export function HospitalExplorer({
             hospitals={hospitals}
             counties={KY_COUNTIES}
             query={query}
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
             onQueryChange={setQuery}
             onChoose={(suggestion) => {
               setQuery(suggestion.label);
@@ -99,11 +102,13 @@ export function HospitalExplorer({
           onSelectCounty={(fips, name) => {
             setQuery(`${name} County`);
             chooseArea(areaFromCounty(fips, name));
+            setSearchOpen(true);
           }}
           onSelectHospital={viewHospital}
           onShowAll={() => {
             setQuery("");
             chooseArea(allKentuckyArea(), "kentucky");
+            setSearchOpen(false);
           }}
         />
       </div>

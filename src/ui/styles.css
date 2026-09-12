@@ -1824,6 +1824,13 @@ h1 {
   margin: 12px 0;
 }
 
+.card-metric {
+  position: relative;
+  cursor: help;
+  border-radius: 12px;
+  padding: 4px 2px;
+}
+
 .card-metrics dt {
   color: var(--paper-dim);
   font-size: 0.78rem;
@@ -1832,6 +1839,41 @@ h1 {
 .card-metrics dd {
   margin: 0;
   font-weight: 750;
+}
+
+.card-metric-tip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 6;
+  width: max(100%, 14rem);
+  max-width: min(22rem, 70vw);
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--page);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgb(25 62 52 / 0.18);
+}
+
+.card-metric:last-child .card-metric-tip {
+  left: auto;
+  right: 0;
+}
+
+.card-metric:hover .card-metric-tip,
+.card-metric:focus-visible .card-metric-tip,
+.card-metric:focus-within .card-metric-tip {
+  display: block;
+}
+
+.card-metric:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
 }
 
 .results-list {

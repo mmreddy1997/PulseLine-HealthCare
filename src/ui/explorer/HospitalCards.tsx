@@ -1,7 +1,29 @@
 import { useRef } from "react";
+import { MEASURES, type MeasureId } from "../../../lib/finance/index.ts";
 import { clampIndex, type ExplorerHospital } from "../../../lib/explorer/index.ts";
 import { StatusGlyph } from "../hospital-display.tsx";
 import { money, statusClass } from "../format.ts";
+
+function CardMetric({
+  measureId,
+  value,
+}: {
+  measureId: MeasureId;
+  value: number | null;
+}) {
+  const measure = MEASURES[measureId];
+  const tipId = `card-metric-${measureId}`;
+  const tip = `${measure.definition} ${measure.not}`;
+  return (
+    <div className="card-metric" tabIndex={0} aria-describedby={tipId}>
+      <dt>{measure.label}</dt>
+      <dd>{money(value)}</dd>
+      <p id={tipId} className="card-metric-tip" role="tooltip">
+        {tip}
+      </p>
+    </div>
+  );
+}
 
 export interface HospitalCardModel {
   hospital: ExplorerHospital;
@@ -103,18 +125,9 @@ export function HospitalCards({
           </p>
         ) : (
           <dl className="card-metrics">
-            <div>
-              <dt>Net patient revenue</dt>
-              <dd>{money(card.netPatientRevenue)}</dd>
-            </div>
-            <div>
-              <dt>Patient-service expenses</dt>
-              <dd>{money(card.expenses)}</dd>
-            </div>
-            <div>
-              <dt>Cash</dt>
-              <dd>{money(card.cash)}</dd>
-            </div>
+            <CardMetric measureId="net_patient_revenue" value={card.netPatientRevenue} />
+            <CardMetric measureId="patient_service_expenses" value={card.expenses} />
+            <CardMetric measureId="cash" value={card.cash} />
           </dl>
         )}
         <p className="tiny">Coverage: {hospital.dataCoverage === "pending" ? "Pending" : hospital.dataCoverage}</p>

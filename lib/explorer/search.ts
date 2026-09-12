@@ -207,7 +207,16 @@ export function buildSearchSuggestions(
   for (const hospital of hospitals) {
     const name = hospital.name.toLowerCase();
     const tokens = query.split(" ");
-    const hay = [hospital.name, hospital.city, hospital.county, hospital.zip].filter(Boolean).join(" ").toLowerCase();
+    const hay = [
+      hospital.name,
+      hospital.city,
+      hospital.county,
+      hospital.county ? `${hospital.county} county` : null,
+      hospital.zip,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
     const matchesTokens = tokens.every((token) => hay.includes(token));
     const zipHit = /^\d{3,5}$/.test(zipQuery) && zipMatches(hospital.zip, zipQuery);
     if (!matchesTokens && !zipHit) continue;

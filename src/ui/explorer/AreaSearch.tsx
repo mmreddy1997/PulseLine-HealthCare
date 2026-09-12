@@ -12,6 +12,8 @@ export function AreaSearch({
   hospitals,
   counties,
   query,
+  open,
+  onOpenChange,
   onQueryChange,
   onChoose,
   onClear,
@@ -19,12 +21,13 @@ export function AreaSearch({
   hospitals: ExplorerHospital[];
   counties: CountyRef[];
   query: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onQueryChange: (value: string) => void;
   onChoose: (suggestion: SearchSuggestion) => void;
   onClear: () => void;
 }) {
   const listId = useId();
-  const [open, setOpen] = useState(false);
   const [listingAll, setListingAll] = useState(false);
   const suggestions = useMemo(
     () =>
@@ -51,18 +54,18 @@ export function AreaSearch({
             onChange={(event) => {
               onQueryChange(event.target.value);
               setListingAll(false);
-              setOpen(true);
+              onOpenChange(true);
             }}
-            onFocus={() => setOpen(true)}
+            onFocus={() => onOpenChange(true)}
             onKeyDown={(event) => {
               if (event.key === "Escape") {
-                setOpen(false);
+                onOpenChange(false);
               }
               if (event.key === "Enter" && suggestions[0]) {
                 event.preventDefault();
                 onChoose(suggestions[0]);
                 setListingAll(false);
-                setOpen(false);
+                onOpenChange(false);
               }
             }}
           />
@@ -74,7 +77,7 @@ export function AreaSearch({
             onClick={() => {
               onClear();
               setListingAll(false);
-              setOpen(false);
+              onOpenChange(false);
             }}
           >
             Clear search
@@ -86,7 +89,7 @@ export function AreaSearch({
             onClick={() => {
               onClear();
               setListingAll(true);
-              setOpen(true);
+              onOpenChange(true);
             }}
           >
             Show all
@@ -108,7 +111,7 @@ export function AreaSearch({
                   onClick={() => {
                     onChoose(item);
                     setListingAll(false);
-                    setOpen(false);
+                    onOpenChange(false);
                   }}
                 >
                   <strong>{item.label}</strong>

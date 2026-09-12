@@ -215,6 +215,8 @@ describe("map and list matching", () => {
     const suggestions = buildSearchSuggestions(catalog, countyList, "jackson");
     assert.ok(suggestions.some((item) => item.kind === "city" && item.label.toLowerCase() === "jackson"));
     assert.ok(suggestions.some((item) => item.kind === "hospital" && item.label.includes("Kentucky River")));
+    const breathittCounty = buildSearchSuggestions(catalog, countyList, "Breathitt County");
+    assert.ok(breathittCounty.some((item) => item.kind === "hospital" && item.label.includes("Kentucky River")));
     const jefferson = buildSearchSuggestions(catalog, countyList, "jefferson");
     const county = jefferson.find((item) => item.kind === "county" && item.countyName === "Jefferson");
     assert.ok(county);
