@@ -70,7 +70,7 @@ export function AreaSearch({
             }}
           />
         </label>
-        {query ? (
+        {query || listingAll ? (
           <button
             type="button"
             className="chip chip-quiet"
