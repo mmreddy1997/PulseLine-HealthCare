@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FinancialViewId } from "../../lib/charts/views.ts";
 import { diligenceGaps, EMPTY_EVENT_LEDGER } from "../../lib/diligence/gaps.ts";
 import { evaluateScenario, resetScenarioInputs } from "../../lib/scenario/whatif.ts";
@@ -238,8 +238,10 @@ export function HospitalWorkspace({
   const askWithScenario = useMemo(() => ({ ...askContext, scenario }), [askContext, scenario]);
   const wide = useWideSplit();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const [barSentinel, setBarSentinel] = useState<HTMLDivElement | null>(null);
   const [compactBar, setCompactBar] = useState(false);
+  const [slotMinHeight, setSlotMinHeight] = useState(0);
   const onCloseRef = useRef(onClose);
   const openedId = view?.hospital.hospitalId ?? research?.hospitalId ?? title;
   const ccnLine = view
@@ -273,15 +275,46 @@ export function HospitalWorkspace({
   }, [openedId]);
 
   useEffect(() => {
-    if (!barSentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setCompactBar(!(entry?.isIntersecting ?? true));
-      },
-      { threshold: 0, rootMargin: "-8px 0px 0px 0px" },
-    );
-    observer.observe(barSentinel);
+    setCompactBar(false);
+    setSlotMinHeight(0);
+  }, [openedId]);
+
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar || compactBar) return;
+    const sync = () => setSlotMinHeight(bar.offsetHeight);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(bar);
     return () => observer.disconnect();
+  }, [compactBar, openedId, title, pending, reports.length, view?.hospital.id]);
+
+  useEffect(() => {
+    if (!barSentinel) return;
+    let frame = 0;
+    function update() {
+      const top = barSentinel.getBoundingClientRect().top;
+      setCompactBar((current) => {
+        if (!current && top < -24) return true;
+        if (current && top >= 8) return false;
+        return current;
+      });
+    }
+    function onScroll() {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        update();
+      });
+    }
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [barSentinel]);
 
   const showAskDesk = pane === "ask" && wide;
@@ -289,26 +322,25 @@ export function HospitalWorkspace({
   return (
     <section id="hospital-financials" className="workspace is-inline" aria-labelledby="workspace-title">
       <div ref={setBarSentinel} className="hospital-bar-sentinel" aria-hidden="true" />
-      <div className={`hospital-bar is-sticky${compactBar ? " is-compact" : ""}`}>
+      <div className="hospital-bar-slot" style={slotMinHeight > 0 ? { minHeight: slotMinHeight } : undefined}>
+        <div ref={barRef} className={`hospital-bar is-sticky${compactBar ? " is-compact" : ""}`}>
         <div className="hospital-bar-identity">
           <h2 id="workspace-title" ref={headingRef} tabIndex={-1}>
             {title}
           </h2>
-          {compactBar ? null : (
-            <>
-              <p className="muted">
-                {[subtitle, ccnLine].filter(Boolean).join(" · ")}
-                {pending ? " · Financial data pending" : ""}
+          <div className="hospital-bar-meta">
+            <p className="muted">
+              {[subtitle, ccnLine].filter(Boolean).join(" · ")}
+              {pending ? " · Financial data pending" : ""}
+            </p>
+            {view ? (
+              <p className="tiny">
+                Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
               </p>
-              {view ? (
-                <p className="tiny">
-                  Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
-                </p>
-              ) : (
-                <p className="tiny">Identity fields were not invented for this research case.</p>
-              )}
-            </>
-          )}
+            ) : (
+              <p className="tiny">Identity fields were not invented for this research case.</p>
+            )}
+          </div>
         </div>
         <div className="hospital-bar-actions">
           {reports.length > 0 ? (
@@ -339,6 +371,7 @@ export function HospitalWorkspace({
           <button type="button" className="chip chip-quiet" onClick={onClose}>
             Close
           </button>
+        </div>
         </div>
       </div>
       {view ? <PeriodMeta view={view} /> : null}

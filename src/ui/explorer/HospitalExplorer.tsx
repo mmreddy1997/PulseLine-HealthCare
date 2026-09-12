@@ -80,20 +80,22 @@ export function HospitalExplorer({
       </div>
 
       <div className="explorer-split">
-        <AreaSearch
-          hospitals={hospitals}
-          counties={KY_COUNTIES}
-          query={query}
-          onQueryChange={setQuery}
-          onChoose={(suggestion) => {
-            setQuery(suggestion.label);
-            chooseArea(areaFromSuggestion(suggestion));
-          }}
-          onClear={() => {
-            setQuery("");
-            chooseArea(allKentuckyArea(), "kentucky");
-          }}
-        />
+        <div className="explorer-search-pane">
+          <AreaSearch
+            hospitals={hospitals}
+            counties={KY_COUNTIES}
+            query={query}
+            onQueryChange={setQuery}
+            onChoose={(suggestion) => {
+              setQuery(suggestion.label);
+              chooseArea(areaFromSuggestion(suggestion));
+            }}
+            onClear={() => {
+              setQuery("");
+              chooseArea(allKentuckyArea(), "kentucky");
+            }}
+          />
+        </div>
         <KentuckyMap
           hospitals={hospitals}
           area={area}

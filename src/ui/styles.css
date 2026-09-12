@@ -333,6 +333,7 @@ a {
 
 .workspace .eyebrow,
 .workspace-hero,
+.hospital-bar-slot,
 .hospital-bar,
 .workspace-tabs,
 .period-select,
@@ -352,6 +353,12 @@ a {
   max-width: 16em;
 }
 
+.hospital-bar-slot {
+  margin-top: 12px;
+  margin-bottom: 16px;
+  overflow-anchor: none;
+}
+
 .hospital-bar {
   display: flex;
   justify-content: space-between;
@@ -360,8 +367,6 @@ a {
   background: var(--ink-2);
   border-radius: var(--radius);
   padding: 22px 24px;
-  margin-top: 12px;
-  margin-bottom: 16px;
 }
 
 .workspace-tabs {
@@ -1052,34 +1057,38 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
+  justify-content: flex-start;
+  gap: 8px 12px;
   min-height: 44px;
   cursor: pointer;
   list-style: none;
 }
 
-.reliance-panel > summary::-webkit-details-marker {
+.reliance-panel > summary::-webkit-details-marker,
+.reliance-panel > summary::marker {
   display: none;
+  content: none;
+}
+
+.reliance-panel > summary::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 2px;
+  border-right: 2px solid var(--paper-dim);
+  border-bottom: 2px solid var(--paper-dim);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.reliance-panel[open] > summary::before {
+  transform: rotate(45deg);
 }
 
 .reliance-panel > summary h3 {
   margin: 0;
   flex: 1 1 auto;
-}
-
-.reliance-panel > summary::after {
-  content: "+";
-  flex: 0 0 auto;
-  width: 1.5rem;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--paper-dim);
-}
-
-.reliance-panel[open] > summary::after {
-  content: "−";
 }
 
 .reliance-body {
@@ -1201,6 +1210,14 @@ button:disabled {
   gap: 16px;
   align-items: stretch;
   margin: 8px 0 20px;
+}
+
+.explorer-search-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 0;
+  min-height: 100%;
 }
 
 .hospital-list {
@@ -1563,10 +1580,13 @@ button:disabled {
     align-items: start;
   }
 
-  .area-search {
+  .explorer-search-pane {
     height: auto;
     min-height: 0;
-    overflow: visible;
+  }
+
+  .area-search {
+    max-height: none;
   }
 
   .search-suggestions {
@@ -1587,6 +1607,10 @@ button:disabled {
   * {
     scroll-behavior: auto;
   }
+
+  .reliance-panel > summary::before {
+    transition: none;
+  }
 }
 
 h1 {
@@ -1606,8 +1630,9 @@ h1 {
   flex-wrap: nowrap;
   gap: 8px;
   align-items: stretch;
-  height: 0;
-  min-height: 100%;
+  flex: 0 1 auto;
+  min-height: 10.5rem;
+  max-height: 100%;
   overflow: hidden;
   background: var(--ink-2);
   border-radius: var(--radius);
@@ -1812,11 +1837,19 @@ h1 {
   background: var(--ink-2);
 }
 
+.hospital-bar-meta {
+  display: grid;
+  gap: 0;
+}
+
+.hospital-bar.is-compact .hospital-bar-meta {
+  display: none;
+}
+
 .hospital-bar.is-compact {
   align-items: center;
   gap: 16px;
   padding: 10px 16px;
-  margin-bottom: 8px;
   border-radius: 18px;
   box-shadow: 0 8px 24px rgb(25 62 52 / 0.12);
 }
@@ -1956,6 +1989,10 @@ h1 {
   align-items: center;
 }
 
+.chart-caption {
+  margin-bottom: 16px;
+}
+
 .chart-toolbar {
   display: flex;
   flex-wrap: nowrap;
@@ -2022,26 +2059,6 @@ h1 {
   border-radius: 12px;
   padding: 8px 10px;
   font-size: 0.95rem;
-}
-
-.chart-expand-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
-
-.chart-expand-dialog {
-  position: relative;
-  z-index: 31;
-  width: min(1100px, 100%);
-  max-height: 100%;
-  overflow: auto;
-  background: var(--page);
-  border-radius: 24px;
-  padding: 16px;
 }
 
 .about-page {

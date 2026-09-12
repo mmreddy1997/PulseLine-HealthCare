@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import kyCounties from "../../../data/geo/ky-counties.json";
 import type { AreaSelection } from "../../../lib/explorer/search.ts";
 import { matchingCountyFips, pluralHospitals, type ExplorerHospital } from "../../../lib/explorer/index.ts";
@@ -76,9 +76,24 @@ export function KentuckyMap({
   const canZoomIn = zoom < MAP_ZOOM_MAX;
   const canZoomOut = zoom > MAP_ZOOM_MIN;
 
+  const svgRef = useRef<SVGSVGElement>(null);
+
   function adjustZoom(delta: number) {
     setZoom((current) => clampMapZoom(current + delta));
   }
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    function onWheel(event: WheelEvent) {
+      const focused = svg === document.activeElement || svg.contains(document.activeElement);
+      if (!event.ctrlKey && !event.metaKey && !focused) return;
+      event.preventDefault();
+      adjustZoom(event.deltaY < 0 ? MAP_ZOOM_STEP : -MAP_ZOOM_STEP);
+    }
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheel);
+  }, []);
 
   const markers = hospitals.filter((hospital) => hospital.latitude != null && hospital.longitude != null);
 
@@ -101,11 +116,12 @@ export function KentuckyMap({
         </div>
       </div>
       <svg
+        ref={svgRef}
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
         role="img"
         tabIndex={0}
-        aria-label="Kentucky counties. Shading is hospital count in the current dataset, not a risk score. Zoom in or out after selecting a county."
+        aria-label="Kentucky counties. Shading is hospital count in the current dataset, not a risk score. Zoom with Ctrl + scroll, or click the map and scroll. Scrolling without Ctrl still moves the page."
         onKeyDown={(event) => {
           if (event.key === "+" || event.key === "=") {
             event.preventDefault();
@@ -196,7 +212,8 @@ export function KentuckyMap({
         {markers.length === 0
           ? " Hospital street markers are omitted because sourced latitude and longitude are not verified."
           : " Markers appear only for hospitals with sourced coordinates."}{" "}
-        After a county is selected, use Zoom in, Zoom out, or + and −.
+        After a county is selected, use Zoom in, Zoom out, Ctrl + scroll, or + and −. Scrolling without Ctrl still
+        moves the page.
       </figcaption>
     </figure>
   );

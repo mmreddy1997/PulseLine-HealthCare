@@ -103,7 +103,6 @@ export function FinancialView({
                   series={pair.secondary}
                   display={display}
                   onToggleDisplay={setDisplay}
-                  expandable={false}
                 />
               ) : null}
             </>
@@ -121,7 +120,7 @@ export function FinancialView({
 
       <details className="operational-separate">
         <summary>Operational utilization (not a financial result)</summary>
-        <FinancialChart series={utilization} compact expandable={false} />
+        <FinancialChart series={utilization} compact />
       </details>
     </section>
   );
