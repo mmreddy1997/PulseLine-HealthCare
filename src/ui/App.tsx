@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import evidencePack from "../../research/PulseLine_expanded_evidence_v1.json";
 import researchPack from "../../research/PulseLine_three_hospital_data.json";
 import { adaptEvidencePack, eventsForHospital, observationsForHospital } from "../../lib/adapt-evidence.ts";
@@ -22,6 +22,16 @@ export function App() {
   const [conversations, setConversations] = useState<Record<string, PulseAnswer[]>>({});
   const [selectedByHospital, setSelectedByHospital] = useState<Record<string, string[]>>({});
   const openerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    function syncPageFromHash() {
+      const hash = window.location.hash;
+      if (hash.startsWith("#about")) setPage("about");
+      else if (hash === "#hospitals" || hash === "") setPage("explore");
+    }
+    window.addEventListener("hashchange", syncPageFromHash);
+    return () => window.removeEventListener("hashchange", syncPageFromHash);
+  }, []);
 
   const researchCases = useMemo(
     () => evidence.ledger?.hospitals.filter((hospital) => hospital.financialCoverage === "pending") ?? [],
@@ -112,6 +122,10 @@ export function App() {
         onAbout={() => {
           setPage("about");
           window.location.hash = "about";
+        }}
+        onPitch={() => {
+          setPage("about");
+          window.location.hash = "about-pitch";
         }}
       />
 

@@ -4,6 +4,29 @@ import { SCORE_NOT, rubricBands } from "../../../lib/score-rubric.ts";
 import { ScoreRubricPanel } from "../score/ScoreRubric.tsx";
 import type { HospitalView } from "../../types.ts";
 
+const PITCH_SLIDES = [
+  {
+    title: "Who this is for",
+    body: "A healthcare strategy, corporate-development, or research reviewer who has to understand one rural hospital from public records this weekend.",
+  },
+  {
+    title: "The problem",
+    body: "CMS files, news, and identity records do not line up. One bad year is easy to read as “this hospital will close.” Two acquired hospitals and two stressed hospitals in this set show why that shortcut fails.",
+  },
+  {
+    title: "What PulseLine does",
+    body: "Search a Kentucky hospital, read what changed between two published reports, open the matching chart, try an illustrative operating scenario, and ask a sourced question. PulseLine shows gaps instead of filling them.",
+  },
+  {
+    title: "What we can show today",
+    body: "Five Kentucky hospitals. Three have historical CMS reports. Paul B. Hall and Highlands stay “Financial data pending” on purpose. PulseLine does not invent scores, financials, or closure predictions.",
+  },
+  {
+    title: "Try it",
+    body: "Open Explorer. Search Morgan County ARH → View financials → What changed? → a chart → Scenarios → Ask “What changed?” Then search Paul B. Hall to see pending data without a fake score.",
+  },
+] as const;
+
 export function AboutPulseLine({
   hospitalView = null,
 }: {
@@ -13,18 +36,88 @@ export function AboutPulseLine({
   const factors = Object.values(scoringConfig.factors);
 
   useEffect(() => {
-    if (window.location.hash === "#about-scoring") {
-      document.getElementById("about-scoring")?.scrollIntoView({ block: "start" });
+    function scrollToHash() {
+      const id = window.location.hash.replace("#", "");
+      if (id.startsWith("about")) {
+        document.getElementById(id)?.scrollIntoView({ block: "start" });
+      }
     }
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
   }, []);
 
   return (
     <article className="about-page" id="about">
       <header className="about-hero">
         <p className="label">About PulseLine</p>
-        <h1>Historical hospital financials, made readable</h1>
+        <h1>See what a hospital’s public finances actually changed — without inventing a forecast.</h1>
         <p className="mission">Because we believe your ZIP code should not determine the quality of care you receive.</p>
+        <p>
+          Rural hospitals can look doomed or fine depending on which year you open. PulseLine lets a reviewer pick one
+          hospital, read the published record, and try a labeled what-if.
+        </p>
+        <p>
+          <a href="#about-pitch">Shareable pitch</a>
+          {" · "}
+          <a href="#about-try">3-minute walkthrough</a>
+          {" · "}
+          <a href="#hospitals">Open Explorer</a>
+        </p>
       </header>
+
+      <section id="about-understand">
+        <h2>In two minutes</h2>
+        <ul>
+          <li>
+            <strong>Customer.</strong> Healthcare M&amp;A, strategy, and acquisition-research reviewers.
+          </li>
+          <li>
+            <strong>Job.</strong> Choose one hospital, understand its historical financial condition, and decide what
+            still needs investigation.
+          </li>
+          <li>
+            <strong>Product.</strong> Search → What changed? → chart → illustrative scenario → sourced Ask.
+          </li>
+          <li>
+            <strong>Not this.</strong> Not a validated prediction model, valuation engine, or acquisition recommendation.
+            Ask answers stay deterministic unless a generated line is approved and templated.
+          </li>
+        </ul>
+      </section>
+
+      <section id="about-pitch">
+        <h2>Pitch deck</h2>
+        <p className="tiny">
+          Five slides for judges and teammates. Share this page: add <code>#about-pitch</code> to the PulseLine URL.
+        </p>
+        <ol className="pitch-slides">
+          {PITCH_SLIDES.map((slide, index) => (
+            <li key={slide.title} className="pitch-slide">
+              <p className="label">
+                Slide {index + 1} of {PITCH_SLIDES.length}
+              </p>
+              <h3>{slide.title}</h3>
+              <p>{slide.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="about-try">
+        <h2>3-minute walkthrough</h2>
+        <ol>
+          <li>Search <strong>Morgan County ARH</strong> and choose View financials.</li>
+          <li>Read <strong>What changed?</strong> Both fiscal periods are shown.</li>
+          <li>Use a chart link, then open <strong>Scenarios</strong>. Raise revenue, read the signed bars, reset. It is not a forecast.</li>
+          <li>Open <strong>Ask</strong> and type “What changed?” Generative AI does not need to run.</li>
+          <li>Search <strong>Paul B. Hall</strong>. Financial data pending means we did not invent a score.</li>
+        </ol>
+        <p className="tiny">
+          Hidden gems: Kentucky River keeps the address and identity flags. Facility-versus-parent events are not treated
+          as the same thing. Ask rejects unsupported closure or acquisition predictions.
+        </p>
+      </section>
 
       <section id="about-what">
         <h2>What PulseLine does</h2>
@@ -46,6 +139,19 @@ export function AboutPulseLine({
         </p>
       </section>
 
+      <section id="about-limits">
+        <h2>Limitations</h2>
+        <ul>
+          <li>Public data may be incomplete or old. Historical reports do not describe current conditions.</li>
+          <li>Missing financials stay missing. They are not treated as zero.</li>
+          <li>Parent events are not automatically facility events. A property sale is not a verified provider CHOW.</li>
+          <li>Acquisition is not proof of distress. Unknown outcomes do not mean no events occurred.</li>
+          <li>County community statistics are not hospital staffing.</li>
+          <li>Street coordinates are unverified. PulseLine does not geocode at runtime or place fabricated markers.</li>
+          <li>The current dataset is five hospitals, not Kentucky-wide coverage.</li>
+        </ul>
+      </section>
+
       <section id="about-scoring">
         <h2>Scoring methodology</h2>
         <p className="tiny">
@@ -53,33 +159,36 @@ export function AboutPulseLine({
           displayed total uses the unrounded calculation, then rounds once.
         </p>
         <p className="tiny">{SCORE_NOT}</p>
-        <h3>Concern-category boundaries</h3>
-        <ul>
-          {bands.map((band) => (
-            <li key={band.label}>
-              {band.label}: {band.min}–{band.max}
-            </li>
-          ))}
-          <li>Insufficient data: no factor could be scored. That is not Stable.</li>
-        </ul>
-        <h3>Factors</h3>
-        <ul className="about-factors">
-          {factors.map((factor) => (
-            <li key={factor.id}>
-              <strong>{factor.label}</strong>
-              <p className="tiny">{factor.formula}</p>
-              <p className="tiny">
-                Base weight {factor.weight.toFixed(2)} · {factor.direction === "lower_is_riskier" ? "Lower values raise concern" : "Higher values raise concern"} ·
-                Healthy {factor.healthy} · Concern {factor.concern}
-              </p>
-            </li>
-          ))}
-        </ul>
-        <p className="tiny">{scoringConfig.rounding}</p>
-        <p className="tiny">
-          When a factor is missing or uninterpretable, it is excluded and remaining base weights are renormalized. Do not
-          add already-rounded contribution labels to reconstruct the total.
-        </p>
+        <details>
+          <summary>Bands, factors, and reconstruction rules</summary>
+          <h3>Concern-category boundaries</h3>
+          <ul>
+            {bands.map((band) => (
+              <li key={band.label}>
+                {band.label}: {band.min}–{band.max}
+              </li>
+            ))}
+            <li>Insufficient data: no factor could be scored. That is not Stable.</li>
+          </ul>
+          <h3>Factors</h3>
+          <ul className="about-factors">
+            {factors.map((factor) => (
+              <li key={factor.id}>
+                <strong>{factor.label}</strong>
+                <p className="tiny">{factor.formula}</p>
+                <p className="tiny">
+                  Base weight {factor.weight.toFixed(2)} · {factor.direction === "lower_is_riskier" ? "Lower values raise concern" : "Higher values raise concern"} ·
+                  Healthy {factor.healthy} · Concern {factor.concern}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="tiny">{scoringConfig.rounding}</p>
+          <p className="tiny">
+            When a factor is missing or uninterpretable, it is excluded and remaining base weights are renormalized. Do not
+            add already-rounded contribution labels to reconstruct the total.
+          </p>
+        </details>
         {hospitalView ? (
           <div className="about-hospital-rubric">
             <h3>Contribution for {hospitalView.hospital.name}</h3>
@@ -97,19 +206,6 @@ export function AboutPulseLine({
           <li>Events and research cases: PulseLine evidence ledger.</li>
           <li>County outlines: U.S. Census Bureau cartographic county boundaries, public domain.</li>
           <li>ZIP codes are facility postal strings. Census ZCTA polygons are not bundled and are not invented.</li>
-          <li>The current dataset is five hospitals, not Kentucky-wide coverage.</li>
-        </ul>
-      </section>
-
-      <section id="about-limits">
-        <h2>Limitations</h2>
-        <ul>
-          <li>Public data may be incomplete or old. Historical reports do not describe current conditions.</li>
-          <li>Missing financials stay missing. They are not treated as zero.</li>
-          <li>Parent events are not automatically facility events. A property sale is not a verified provider CHOW.</li>
-          <li>Acquisition is not proof of distress. Unknown outcomes do not mean no events occurred.</li>
-          <li>County community statistics are not hospital staffing.</li>
-          <li>Street coordinates are unverified. PulseLine does not geocode at runtime or place fabricated markers.</li>
         </ul>
       </section>
 

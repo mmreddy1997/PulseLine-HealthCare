@@ -27,10 +27,12 @@ export function SiteHeader({
   page = "explore",
   onExplore,
   onAbout,
+  onPitch,
 }: {
   page?: "explore" | "about";
   onExplore?: () => void;
   onAbout?: () => void;
+  onPitch?: () => void;
   closeLabel?: string;
   onClose?: () => void;
   closeRef?: Ref<HTMLButtonElement>;
@@ -71,6 +73,16 @@ export function SiteHeader({
           }}
         >
           About PulseLine
+        </a>
+        <a
+          href="#about-pitch"
+          onClick={(event) => {
+            if (!onPitch && !onAbout) return;
+            event.preventDefault();
+            (onPitch ?? onAbout)?.();
+          }}
+        >
+          Pitch
         </a>
       </nav>
     </header>
