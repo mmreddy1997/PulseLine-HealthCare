@@ -18,17 +18,22 @@ export {
   type MeasureValue,
 } from "./measures.ts";
 export {
+  COMPARABILITY_STATES,
   EXPLORATORY_CHANGE_PCT,
   EXPLORATORY_CHANGE_RULE,
   PERIOD_DAY_TOLERANCE,
+  classifyReportingScope,
   comparableChange,
+  comparabilityCaption,
   compareTwoReports,
   orderedReports,
   periodSetComparability,
   percentChangeNote,
   periodsOverlap,
   safePercentChange,
+  type CheckStatus,
   type ComparabilityResult,
+  type ComparabilityState,
 } from "./comparability.ts";
 export { periodAgeDays, periodAgeLabel, periodMeta, publicationStatus, type PeriodMeta } from "./period.ts";
 export { STATEMENT_GROUPS, financialStatement, type FinancialStatement, type StatementRow } from "./statements.ts";

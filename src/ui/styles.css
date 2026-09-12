@@ -1337,21 +1337,85 @@ button:disabled {
   gap: 6px;
 }
 
-.whatif-bars {
+.signed-bars {
   display: grid;
-  gap: 8px;
-  margin: 12px 0;
+  gap: 14px;
+  margin: 12px 0 16px;
 }
 
-.whatif-bars span {
-  display: block;
-  height: 10px;
-  border-radius: 999px;
+.signed-bars-axis {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--paper);
+}
+
+.signed-bars-axis span:last-child {
+  text-align: right;
+}
+
+.signed-bar-row {
+  display: grid;
+  gap: 6px;
+}
+
+.signed-bar-label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+}
+
+.signed-bar-track {
+  position: relative;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.signed-bar-zero {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+  transform: translateX(-1px);
+}
+
+.signed-bar-fill {
+  position: absolute;
+  top: 6px;
+  height: 16px;
+  border-radius: 4px;
   background: var(--forest);
 }
 
-.whatif-bars .base {
-  background: #9bb5a8;
+.signed-bar-fill.is-negative {
+  background: var(--ink);
+}
+
+.signed-bar-zero-mark {
+  position: absolute;
+  top: 4px;
+  width: 10px;
+  height: 20px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  transform: translateX(-5px);
+  background: var(--page);
+}
+
+.signed-bar-row.is-missing .signed-bar-track {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--soft),
+    var(--soft) 8px,
+    var(--rule) 8px,
+    var(--rule) 16px
+  );
 }
 
 .scope-badge {

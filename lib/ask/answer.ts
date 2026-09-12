@@ -3,6 +3,7 @@ import { flaggedExplanations } from "../score-financial.ts";
 import { SCENARIO_LIMIT } from "../scenario/whatif.ts";
 import { fiscalLabel, moneyExact, moneyHeadline } from "../../src/ui/format.ts";
 import { interpretQuestion, totalClarificationOptions, yearClarification } from "./interpret.ts";
+import { parseApprovedExplanationChoice, RESTATE_EXPLANATION } from "./presentation.ts";
 import {
   EXPERIMENTAL_NOTE,
   UNAVAILABLE_STATEMENT,
@@ -647,18 +648,30 @@ function suggestedFallback(context: AskContext): string[] {
   return ["What financial pressures are visible in the available reports?", "Which figures are missing or excluded?"];
 }
 
-export function applyModelExplanation(answer: PulseAnswer, explanation: string | null): PulseAnswer {
-  if (answer.status !== "complete" || !explanation) {
+export function applyModelExplanation(
+  answer: PulseAnswer,
+  explanation: string | null,
+  options: { modelRan?: boolean } = {},
+): PulseAnswer {
+  if (answer.status !== "complete") {
     return { ...answer, mode: "data_lookup", explanation: null };
   }
-  const extraMoney = [...explanation.matchAll(/-?\$[\d,]+(?:\.\d+)?/g)].some((match) => {
-    const compact = match[0].replaceAll(",", "");
-    return !answer.lockedFacts.some((fact) => fact.includes(compact) || fact.includes(match[0]));
-  });
-  if (extraMoney) {
-    return { ...answer, mode: "data_lookup", explanation: null };
+  if (!explanation) {
+    return {
+      ...answer,
+      mode: options.modelRan ? "on_device_unused" : "data_lookup",
+      explanation: null,
+    };
   }
-  return { ...answer, mode: "on_device_explanation", explanation };
+  const choice = parseApprovedExplanationChoice(explanation);
+  if (!choice) {
+    return { ...answer, mode: "on_device_unused", explanation: null };
+  }
+  return {
+    ...answer,
+    mode: "on_device_explanation",
+    explanation: RESTATE_EXPLANATION,
+  };
 }
 
 export function answerKnownIntent(context: AskContext, question: string, intent: AskIntent): PulseAnswer {

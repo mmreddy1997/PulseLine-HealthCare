@@ -198,18 +198,28 @@ export function briefEvidenceGaps(input: {
   pending: boolean;
   comparable?: boolean;
   durationOk?: boolean;
+  durationStatus?: "pass" | "unknown" | "fail";
   overlapOrDuplicate?: boolean;
   publicationUnverified?: boolean;
   displayedMissing?: string[];
 }): { priority: DiligenceGap[]; additional: DiligenceGap[] } {
   const gaps = diligenceGaps(input);
-  if (input.durationOk === false) {
-    pushUnique(gaps, {
-      id: "unequal_periods",
-      kind: "excluded_uninterpretable",
-      label: "Reporting periods are not the same length",
-      detail: "Period lengths differ by more than 30 days. Both reports are shown. PulseLine does not treat them as a continuous trend.",
-    });
+  if (!input.pending) {
+    if (input.durationStatus === "unknown") {
+      pushUnique(gaps, {
+        id: "missing_period_length",
+        kind: "missing_from_pulseline",
+        label: "Reporting-period length is missing",
+        detail: "At least one report has no verified period length. PulseLine does not describe those lengths as being within 30 days.",
+      });
+    } else if (input.durationStatus === "fail") {
+      pushUnique(gaps, {
+        id: "unequal_periods",
+        kind: "excluded_uninterpretable",
+        label: "Reporting periods are not the same length",
+        detail: "Period lengths differ by more than 30 days. Both reports are shown. PulseLine does not treat them as a continuous trend.",
+      });
+    }
   }
   if (input.overlapOrDuplicate) {
     pushUnique(gaps, {

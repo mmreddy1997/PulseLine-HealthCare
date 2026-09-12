@@ -52,8 +52,10 @@ Missing values stay missing. They are not shown as zero. If the published patien
 The visual brief and the Ask question “What changed between these reports?” use the same structured result from `whatChangedBrief`.
 
 - Compare the selected fiscal report with the immediately preceding available report by fiscal-end date. Both periods are always shown. PulseLine does not skip to a different report merely to produce a change.
-- Before a growth rate is shown, PulseLine checks measure definitions and units, period duration (within 30 days), overlapping periods, duplicate/revised CMS report record ids, entity scope, and existing validity/exclusion rules.
-- Unknown consolidation scope stays visible. It does not by itself hide the figures, and it does not establish full comparability.
+- Before a growth rate is shown, PulseLine checks measure definitions and units, period duration, overlapping periods, duplicate/revised CMS report record ids, entity scope, and existing validity/exclusion rules.
+- Each comparison has an explicit state: **Comparable** (required checks passed), **Limited** (required evidence is missing, including unknown scope or missing period length), or **Incompatible** (known facility-versus-parent scope difference, overlapping or duplicate reports, or period lengths that differ by more than 30 days).
+- Known facility-versus-parent scope differences block same-entity growth claims. Missing period lengths are never described as verified or “within 30 days.”
+- Unknown consolidation scope stays visible. Figures can still be viewed retrospectively. PulseLine does not present that as verified same-entity growth.
 - Percentage change is used only for appropriate values with a valid **positive** baseline. Percentage-point change is used for percentage measures. Ratio-point change is used for ratios. Absolute change is shown when a percentage would mislead.
 - PulseLine does not calculate percentage growth from a missing, zero, or negative baseline. Missing values and negative published values are preserved. They are not turned into zero.
 - Reports are not annualized, interpolated, or invented to enable a comparison.
@@ -170,7 +172,7 @@ A blank event log does not mean no events occurred.
 
 ## PulseLine Ask
 
-Ask is a supporting, hospital-specific helper. Suggested questions, free-text lookup, follow-ups, copy, and answer-only PDF export work without downloading a model. Facts and calculations are produced by application code. The language model never invents or recalculates financial values.
+Ask is a supporting, hospital-specific helper. Suggested questions, free-text lookup, follow-ups, copy, and answer-only PDF export work without downloading a model. Facts, arithmetic, periods, hospital identity, and comparison statements are produced by application code. Free-form model text is not shown. If the optional on-device helper runs, PulseLine accepts only an approved structured choice and renders a trusted template. Any other output is discarded and the deterministic answer is kept. Copied answers and PDF exports follow the same rule. Cards label whether generative AI ran.
 
 If a device cannot run the optional model, Ask continues as **data lookup**. Conversations are scoped to the selected hospital, can be cleared, and are not persisted after the tab is closed.
 

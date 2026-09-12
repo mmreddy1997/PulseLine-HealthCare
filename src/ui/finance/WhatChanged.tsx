@@ -105,8 +105,8 @@ function ReliancePanel({
   observations: EvidenceObservation[];
   pending: boolean;
 }) {
-  const durationOk = brief.comparability?.checks.find((check) => check.id === "duration")?.ok;
-  const overlap = brief.comparability?.checks.find((check) => check.id === "overlap")?.ok === false;
+  const durationStatus = brief.comparability?.checks.find((check) => check.id === "duration")?.status;
+  const overlap = brief.comparability?.checks.find((check) => check.id === "overlap")?.status === "fail";
   const displayedMissing = brief.allCards
     .filter((card) => card.previousRaw === null || card.currentRaw === null)
     .map((card) => card.title);
@@ -117,7 +117,7 @@ function ReliancePanel({
     observations,
     pending,
     comparable: brief.comparable,
-    durationOk,
+    durationStatus,
     overlapOrDuplicate: overlap,
     publicationUnverified: view ? view.hospital.publicationDate == null : true,
     displayedMissing,
@@ -234,7 +234,12 @@ export function WhatChangedPanel({
             </>
           )}
         </p>
-        {!brief.comparable && brief.comparability ? <p className="tiny">{brief.comparability.note}</p> : null}
+        {brief.comparability && brief.comparability.state !== "comparable" ? (
+          <p className="tiny">
+            {brief.comparability.state === "incompatible" ? "These reports are not comparable. " : "Limited comparison. "}
+            {brief.comparability.note}
+          </p>
+        ) : null}
         {cards.length === 0 ? (
           <p>{brief.changes[0]?.text ?? "No supported comparison is available."}</p>
         ) : (

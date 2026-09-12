@@ -81,6 +81,7 @@ export function FinancialChart({
         <div>
           <strong>{extra ? `${series.title} and ${extra.title}` : series.title}</strong>
           <p className="tiny">{series.question}</p>
+          <p className="tiny">{series.comparabilityNote}</p>
           <p className="chart-unit">{series.unit === "usd" ? "USD" : series.unit === "percent" ? "Percent" : series.unit === "ratio" ? "Ratio" : series.unit}</p>
         </div>
         <div className="chart-toolbar">

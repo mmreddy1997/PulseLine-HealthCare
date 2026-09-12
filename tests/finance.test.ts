@@ -113,6 +113,7 @@ describe("fiscal-period comparability and safe percentages", () => {
     assert.equal(periodsOverlap(first, overlap), true);
     const blocked = compareTwoReports(overlap, first, "net_patient_revenue");
     assert.equal(blocked.comparable, false);
+    assert.equal(blocked.state, "incompatible");
     const stretched = {
       ...second,
       hospital: { ...second.hospital, periodDays: 180 },
@@ -126,6 +127,49 @@ describe("fiscal-period comparability and safe percentages", () => {
     );
     assert.equal(duration.percent, null);
     assert.equal(duration.comparable, false);
+    assert.equal(duration.state, "incompatible");
+  });
+
+  it("uses comparable, limited, and incompatible states without claiming missing lengths are verified", () => {
+    const breck = facility("Breckinridge");
+    const previous = priorReport(breck.reports, breck.latest);
+    assert.ok(previous);
+    const valid = compareTwoReports(breck.latest, previous, "net_patient_revenue");
+    assert.equal(valid.state, "comparable");
+    assert.equal(valid.comparable, true);
+    assert.equal(valid.permitsRelativeChange, true);
+    assert.match(valid.note, /same CMS measure|two-report|successive/i);
+    assert.ok(!/cannot verify that these periods are within 30 days/i.test(valid.note));
+
+    const missingDays = compareTwoReports(
+      withFinancials(breck.latest, { periodDays: null }),
+      withFinancials(previous, { periodDays: null }),
+      "net_patient_revenue",
+    );
+    assert.equal(missingDays.state, "limited");
+    assert.equal(missingDays.comparable, false);
+    assert.equal(missingDays.permitsRelativeChange, false);
+    assert.match(missingDays.note, /missing/i);
+    assert.ok(!/within 30 days of each other\./i.test(missingDays.note) || /cannot verify/i.test(missingDays.note));
+
+    const scopeClash = compareTwoReports(
+      withFinancials(breck.latest, { reportingScope: "facility" }),
+      withFinancials(previous, { reportingScope: "parent" }),
+      "net_patient_revenue",
+    );
+    assert.equal(scopeClash.state, "incompatible");
+    assert.equal(scopeClash.comparable, false);
+    assert.equal(scopeClash.permitsRelativeChange, false);
+    assert.match(scopeClash.note, /facility and parent|scopes differ/i);
+
+    const unknownScope = compareTwoReports(
+      withFinancials(breck.latest, { reportingScope: null }),
+      withFinancials(previous, { reportingScope: null }),
+      "net_patient_revenue",
+    );
+    assert.equal(unknownScope.state, "limited");
+    assert.equal(unknownScope.permitsRelativeChange, true);
+    assert.match(unknownScope.note, /not verified same-entity|not independently reconciled/i);
   });
 });
 
@@ -234,7 +278,9 @@ describe("What changed structured brief", () => {
     });
     assert.equal(overlapBrief.previousPeriod?.end, previous.hospital.fiscalYearEnd);
     assert.equal(overlapBrief.comparable, false);
+    assert.equal(overlapBrief.comparability?.state, "incompatible");
     assert.match(overlapBrief.comparability?.note ?? "", /overlap/i);
+    assert.match(formatWhatChangedAnswer(overlapBrief).statement, /not comparable/i);
     assert.ok(overlapBrief.defaultCards.length > 0);
 
     const stretched = withFinancials(breck.latest, { periodDays: 180 });
@@ -245,8 +291,27 @@ describe("What changed structured brief", () => {
       hospitalName: "Duration hospital",
     });
     assert.equal(durationBrief.comparable, false);
+    assert.equal(durationBrief.comparability?.state, "incompatible");
     assert.equal(durationBrief.previousPeriod?.end, short.hospital.fiscalYearEnd);
     assert.match(durationBrief.comparability?.note ?? "", /30 days/i);
+
+    const missingLength = whatChangedBrief({
+      view: withFinancials(breck.latest, { periodDays: null }),
+      reports: [withFinancials(previous, { periodDays: null }), withFinancials(breck.latest, { periodDays: null })],
+      hospitalName: "Missing length hospital",
+    });
+    assert.equal(missingLength.comparability?.state, "limited");
+    assert.match(formatWhatChangedAnswer(missingLength).statement, /Limited comparison/i);
+    assert.match(formatWhatChangedAnswer(missingLength).limitations.join(" "), /cannot verify/i);
+
+    const unknownScope = whatChangedBrief({
+      view: withFinancials(breck.latest, { reportingScope: null }),
+      reports: [withFinancials(previous, { reportingScope: null }), withFinancials(breck.latest, { reportingScope: null })],
+      hospitalName: "Unknown scope hospital",
+    });
+    assert.equal(unknownScope.comparability?.state, "limited");
+    assert.match(formatWhatChangedAnswer(unknownScope).statement, /Limited comparison|not verified same-entity|not independently reconciled/i);
+    assert.ok(unknownScope.defaultCards.some((card) => card.relativeLabel != null || card.absoluteLabel != null));
   });
 
   it("flags duplicate or revised report records without inventing a substitute pair", () => {

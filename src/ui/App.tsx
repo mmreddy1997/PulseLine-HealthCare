@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import evidencePack from "../../research/PulseLine_expanded_evidence_v1.json";
 import researchPack from "../../research/PulseLine_three_hospital_data.json";
 import { adaptEvidencePack, eventsForHospital, observationsForHospital } from "../../lib/adapt-evidence.ts";
@@ -21,6 +21,7 @@ export function App() {
   const [selectedResearchId, setSelectedResearchId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Record<string, PulseAnswer[]>>({});
   const [selectedByHospital, setSelectedByHospital] = useState<Record<string, string[]>>({});
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const researchCases = useMemo(
     () => evidence.ledger?.hospitals.filter((hospital) => hospital.financialCoverage === "pending") ?? [],
@@ -55,7 +56,20 @@ export function App() {
     ...researchCases.map((hospital) => hospital.name),
   ];
 
+  const rememberOpener = () => {
+    const active = document.activeElement;
+    openerRef.current = active instanceof HTMLElement ? active : null;
+  };
+  const restoreOpener = () => {
+    const opener = openerRef.current;
+    openerRef.current = null;
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) opener.focus();
+    });
+  };
+
   const openHospital = useCallback((hospitalId: string) => {
+    rememberOpener();
     const facility = loaded.facilities.find((item) => item.hospitalId === hospitalId);
     if (facility) {
       setSelectedResearchId(null);
@@ -80,9 +94,11 @@ export function App() {
   const closeFacility = useCallback(() => {
     setSelectedHospitalId(null);
     setSelectedReportId(null);
+    restoreOpener();
   }, []);
   const closeResearch = useCallback(() => {
     setSelectedResearchId(null);
+    restoreOpener();
   }, []);
 
   return (

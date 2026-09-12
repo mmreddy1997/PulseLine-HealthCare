@@ -2,6 +2,7 @@ import type { FinancialViewId } from "../charts/views.ts";
 import type { HospitalView } from "../../src/types.ts";
 import { moneyExact } from "../../src/ui/format.ts";
 import {
+  comparabilityCaption,
   compareTwoReports,
   EXPLORATORY_CHANGE_PCT,
   EXPLORATORY_CHANGE_RULE,
@@ -251,11 +252,12 @@ function measureCard(
   const comparability = compareTwoReports(current, previous, id);
   const relative = relativeChangeForUnit(now.value, then.value, MEASURES[id].unit);
   const absolute = now.value !== null && then.value !== null ? now.value - then.value : null;
-  const withheldPercent = MEASURES[id].unit !== "percent" && MEASURES[id].unit !== "ratio" && !comparability.comparable;
+  const withheldPercent =
+    MEASURES[id].unit !== "percent" && MEASURES[id].unit !== "ratio" && !comparability.permitsRelativeChange;
   const kind = withheldPercent && relative.kind === "percent" ? "absolute_only" : relative.kind;
   const relativeValue = kind === "absolute_only" ? null : relative.value;
   const limitationParts = [
-    !comparability.comparable ? comparability.note : null,
+    comparability.state !== "comparable" ? comparabilityCaption(comparability) : null,
     relative.note,
     now.exclusion,
     then.exclusion && then.exclusion !== now.exclusion ? then.exclusion : null,
@@ -291,7 +293,7 @@ function measureCard(
     absoluteValue: absolute,
     explanation,
     direction,
-    comparable: comparability.comparable && now.value !== null && then.value !== null,
+    comparable: comparability.permitsRelativeChange && now.value !== null && then.value !== null,
     limitation: limitationParts[0] ?? null,
     ...chartMeta(chartView),
     originNote: `${origin}. ${MEASURES[id].cmsField ? `CMS field: ${MEASURES[id].cmsField}.` : MEASURES[id].definition}`,
@@ -334,14 +336,15 @@ function buildMeasureExplanation(
           : kind === "absolute_only"
             ? ` ${percentChangeNote(previous) ?? "A percentage change is not shown because it would mislead."}`
             : "";
-  const comparableBit = comparability.comparable
-    ? " This is a two-report comparison, not a multi-year trend."
-    : ` ${comparability.note}`;
+  const comparableBit =
+    comparability.state === "comparable"
+      ? " This is a two-report comparison, not a multi-year trend."
+      : ` ${comparabilityCaption(comparability)}`;
   const notBit = ` ${MEASURES[id].not}`;
   const cue =
     kind === "percent" &&
     relativeValue !== null &&
-    comparability.comparable &&
+    comparability.permitsRelativeChange &&
     Math.abs(relativeValue) >= EXPLORATORY_CHANGE_PCT
       ? ` The change meets PulseLine’s exploratory ${EXPLORATORY_CHANGE_PCT}% display cue.`
       : "";
@@ -359,8 +362,8 @@ function growthCard(current: HospitalView, previous: HospitalView): ChangeCard |
   const comparability = compareTwoReports(current, previous, "net_patient_revenue");
   const nprAbs = nprNow.value !== null && nprThen.value !== null ? nprNow.value - nprThen.value : null;
   const expAbs = expNow.value !== null && expThen.value !== null ? expNow.value - expThen.value : null;
-  const nprPct = comparability.comparable ? safePercentChange(nprNow.value, nprThen.value) : null;
-  const expPct = comparability.comparable ? safePercentChange(expNow.value, expThen.value) : null;
+  const nprPct = comparability.permitsRelativeChange ? safePercentChange(nprNow.value, nprThen.value) : null;
+  const expPct = comparability.permitsRelativeChange ? safePercentChange(expNow.value, expThen.value) : null;
   const explanation = growthExplanation(nprPct, expPct, nprAbs, expAbs, nprThen.value, expThen.value, comparability);
   const displayPrevious =
     nprThen.value !== null && expThen.value !== null
@@ -425,8 +428,10 @@ function growthCard(current: HospitalView, previous: HospitalView): ChangeCard |
     absoluteValue: nprAbs,
     explanation,
     direction: directionOf(nprAbs ?? expAbs),
-    comparable: comparability.comparable && nprNow.value !== null && nprThen.value !== null,
-    limitation: comparability.comparable ? percentChangeNote(nprThen.value) ?? percentChangeNote(expThen.value) : comparability.note,
+    comparable: comparability.permitsRelativeChange && nprNow.value !== null && nprThen.value !== null,
+    limitation: comparability.permitsRelativeChange
+      ? percentChangeNote(nprThen.value) ?? percentChangeNote(expThen.value)
+      : comparabilityCaption(comparability),
     ...chartMeta("npr_expenses"),
     originNote: "CMS Net Patient Revenue and Less Total Operating Expense. Not total hospital revenue.",
     details: [
@@ -460,9 +465,9 @@ function growthExplanation(
   comparability: ComparabilityResult,
 ): string {
   const parts: string[] = [];
-  if (!comparability.comparable) {
+  if (comparability.state === "incompatible") {
     parts.push("Both reporting periods are shown. PulseLine does not treat these reports as a continuous trend.");
-    parts.push(comparability.note);
+    parts.push(comparabilityCaption(comparability));
   } else if (nprPct !== null && expPct !== null) {
     if (nprPct > 0 && expPct > 0) {
       parts.push(
@@ -512,7 +517,8 @@ function growthExplanation(
     }
   }
   parts.push("Net patient revenue is not total hospital revenue. Patient-service expenses are CMS Less Total Operating Expense, not a validated overall operating-cost total.");
-  if (comparability.comparable) parts.push("This is a two-report comparison, not a multi-year trend.");
+  if (comparability.state === "comparable") parts.push("This is a two-report comparison, not a multi-year trend.");
+  else if (comparability.state === "limited") parts.push(comparabilityCaption(comparability));
   return parts.join(" ");
 }
 
@@ -583,13 +589,13 @@ function assetsCard(current: HospitalView, previous: HospitalView): ChangeCard |
     const comparability = compareTwoReports(current, previous, "total_assets");
     const assetAbs = assetsNow.value !== null && assetsThen.value !== null ? assetsNow.value - assetsThen.value : null;
     const liabAbs = liabNow.value !== null && liabThen.value !== null ? liabNow.value - liabThen.value : null;
-    const assetPct = comparability.comparable ? safePercentChange(assetsNow.value, assetsThen.value) : null;
-    const liabPct = comparability.comparable ? safePercentChange(liabNow.value, liabThen.value) : null;
+    const assetPct = comparability.permitsRelativeChange ? safePercentChange(assetsNow.value, assetsThen.value) : null;
+    const liabPct = comparability.permitsRelativeChange ? safePercentChange(liabNow.value, liabThen.value) : null;
     const parts: string[] = [];
     if (assetAbs !== null) parts.push(`Total assets ${directionWord(directionOf(assetAbs))} from ${formatMeasure("total_assets", assetsThen.value)} to ${formatMeasure("total_assets", assetsNow.value)}.`);
     if (liabAbs !== null) parts.push(`Total liabilities ${directionWord(directionOf(liabAbs))} from ${formatMeasure("total_liabilities", liabThen.value)} to ${formatMeasure("total_liabilities", liabNow.value)}.`);
-    if (!comparability.comparable) parts.push(comparability.note);
-    else parts.push("This is a two-report comparison, not a multi-year trend.");
+    if (comparability.state === "comparable") parts.push("This is a two-report comparison, not a multi-year trend.");
+    else parts.push(comparabilityCaption(comparability));
     parts.push("These are published CMS totals, not enterprise value.");
     return {
       id: "card:assets_liabilities",
@@ -651,8 +657,8 @@ function assetsCard(current: HospitalView, previous: HospitalView): ChangeCard |
       absoluteValue: assetAbs,
       explanation: parts.join(" "),
       direction: directionOf(assetAbs),
-      comparable: comparability.comparable && assetsNow.value !== null && assetsThen.value !== null,
-      limitation: comparability.comparable ? null : comparability.note,
+      comparable: comparability.permitsRelativeChange && assetsNow.value !== null && assetsThen.value !== null,
+      limitation: comparability.state === "comparable" ? null : comparabilityCaption(comparability),
       ...chartMeta("assets_liabilities"),
       originNote: "CMS Total Assets and Total Liabilities. Negative published values are preserved.",
       details: [
@@ -968,7 +974,7 @@ function investigateLines(
   if (!reconcile.reconciled && reconcile.published !== null && reconcile.derived !== null) {
     lines.push({ id: "reconcile", text: reconcile.note, periodLabel: periodLabel(view) });
   }
-  for (const check of checks.filter((item) => !item.ok)) {
+  for (const check of checks.filter((item) => item.status !== "pass")) {
     lines.push({ id: `check:${check.id}`, text: check.detail, periodLabel: periodLabel(view) });
   }
   return lines;
@@ -982,7 +988,7 @@ function collectLimitations(
   cards: ChangeCard[],
 ): string[] {
   const lines = [
-    comparability.note,
+    comparabilityCaption(comparability),
     period.publicationLabel,
     period.ageLabel,
     "Fiscal-end age is not a source publication date or an access date.",
@@ -1027,9 +1033,12 @@ export function formatWhatChangedAnswer(brief: WhatChangedBrief): {
     brief.remainingCards.length > 0
       ? `Additional supported measures are available in PulseLine (${brief.remainingCards.map((card) => card.title).join("; ")}).`
       : null;
-  const comparability = brief.comparable
-    ? "This is a two-report comparison, not a multi-year trend."
-    : `Comparability limitation: ${brief.comparability?.note ?? "These reports are not treated as a continuous trend."}`;
+  const comparability =
+    brief.comparability?.state === "comparable" || brief.comparable
+      ? "This is a two-report comparison, not a multi-year trend."
+      : brief.comparability
+        ? comparabilityCaption(brief.comparability)
+        : "Comparability limitation: These reports are not treated as a continuous trend.";
   const statement = [header, ...cardLines, remaining, comparability].filter(Boolean).join(" ");
   const lockedFacts = [
     `previous_start=${brief.previousPeriod.start ?? ""}`,
@@ -1037,6 +1046,7 @@ export function formatWhatChangedAnswer(brief: WhatChangedBrief): {
     `selected_start=${brief.currentPeriod.start ?? ""}`,
     `selected_end=${brief.currentPeriod.end}`,
     `comparable=${brief.comparable}`,
+    `comparability_state=${brief.comparability?.state ?? "unknown"}`,
     ...brief.allCards.flatMap((card) => [
       `${card.id}:previous=${card.previousRaw ?? "null"}`,
       `${card.id}:current=${card.currentRaw ?? "null"}`,
