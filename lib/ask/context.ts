@@ -1,5 +1,6 @@
 import type { EvidenceHospital, EvidenceLedger, FacilityRadarView } from "../../src/types.ts";
 import { eventsForHospital, observationsForHospital } from "../adapt-evidence.ts";
+import type { ScenarioResult } from "../scenario/whatif.ts";
 import type { AskContext } from "./types.ts";
 
 export function scoredAskContext(
@@ -7,6 +8,7 @@ export function scoredAskContext(
   selectedReportId: string | null,
   ledger: EvidenceLedger | undefined,
   otherNames: string[],
+  scenario: ScenarioResult | null = null,
 ): AskContext {
   const selected =
     facility.reports.find((report) => report.hospital.id === selectedReportId) ?? facility.latest;
@@ -20,6 +22,7 @@ export function scoredAskContext(
     observations: observationsForHospital(ledger, facility.hospitalId),
     research: null,
     otherHospitalNames: otherNames.filter((name) => name !== facility.name),
+    scenario,
   };
 }
 
@@ -27,6 +30,7 @@ export function researchAskContext(
   hospital: EvidenceHospital,
   ledger: EvidenceLedger | undefined,
   otherNames: string[],
+  scenario: ScenarioResult | null = null,
 ): AskContext {
   return {
     kind: "research",
@@ -38,5 +42,6 @@ export function researchAskContext(
     observations: observationsForHospital(ledger, hospital.hospitalId),
     research: hospital,
     otherHospitalNames: otherNames.filter((name) => name !== hospital.name),
+    scenario,
   };
 }

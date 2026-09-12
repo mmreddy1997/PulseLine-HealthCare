@@ -1,37 +1,94 @@
 # PulseLine
 
-Experimental evidence dashboard for rural Kentucky hospitals.
+Experimental hospital financial-review tool for healthcare M&A and strategy work.
 
-PulseLine helps county and state healthcare leaders, rural-health researchers, and community planners:
+Current product hypothesis (not a validated customer requirement):
 
-- Understand historical hospital financial indicators
-- Compare available reporting years
-- Examine documented structural events
-- Ask questions about a hospital’s available evidence
-- Download only the answers they choose
+**Help a reviewer choose one hospital, understand its historical financial condition, and explore transparent operating scenarios.**
 
-It does not predict bankruptcy, closure, acquisition, or service reduction.
+Primary workflow: Choose hospital → Understand financials → Explore scenarios → Investigate evidence gaps.
+
+Financial analysis is the main product. PulseLine Ask and the experimental concern score support it. PulseLine is not a valuation platform, deal recommendation engine, or substitute for professional diligence.
+
+The About page keeps the mission:
 
 > Because we believe your ZIP code should not determine the quality of care you receive.
 
+Community-access context remains available. It is not a hospital staffing measure and does not prove that a transaction improves or harms access unless a sourced record says so.
+
 ## How to use PulseLine
 
-1. Choose a hospital.
-2. Explore reports and explanations.
-3. Ask about the available evidence.
-4. Download selected answers.
+1. Search a hospital, city, county, or facility ZIP. The matching Kentucky area is highlighted when a county outline is available.
+2. Browse matching hospital cards with arrows, keyboard, or swipe. Browsing does not open financials.
+3. Choose **View financials** to open that hospital’s workspace below the cards.
+4. Use **Financial view** for one large chart at a time, then Scenarios, Evidence, and Ask.
+5. Open **About PulseLine** for methodology, sources, limitations, and the scoring rubric.
+
+Research cases without financials show **Financial data pending**. They keep sourced events. They do not receive a score, charts, or an enabled scenario model.
+
+“No matching hospitals in PulseLine” does not mean no hospitals exist there. ZIP searches use facility postal ZIP strings. PulseLine does not draw Census ZCTA polygons and does not invent missing boundaries or coordinates.
+
+## Financial definitions
+
+Single source of truth: `lib/finance`. Display, charts, statements, the guided brief, and Ask explanations reuse these definitions.
+
+| Measure | Origin | Construction | Not |
+| --- | --- | --- | --- |
+| Net patient revenue | Source | CMS Net Patient Revenue | Not total hospital revenue |
+| Patient-service expenses | Source | CMS Less Total Operating Expense | Not a validated overall operating-cost total |
+| Published patient-service result | Source | CMS Net Income from Service to Patients | Not overall operating income, net income, or cash flow |
+| Derived patient-service balance | Calculated | NPR − Less Total Operating Expense | Not cash flow. Shown separately from the published result |
+| Patient-service result | Calculated | Published result / NPR | Not a validated overall operating margin |
+| Total assets / liabilities | Source | CMS totals | Negative published values are preserved |
+| Cash | Source | CMS Cash on Hand and in Banks | Not a cash-runway estimate |
+| Current ratio | Calculated | Current assets / current liabilities | Excluded if current liabilities ≤ 0 |
+| Liabilities / assets | Calculated | Total liabilities / total assets | Excluded if assets ≤ 0 or liabilities are uninterpretable |
+| Inpatient utilization | Calculated | Total Days / Total Bed Days Available | Operational only, not a financial result |
+
+Missing values stay missing. They are not shown as zero. If the published patient-service result differs from the derived subtraction, both are shown. PulseLine does not overwrite one with the other.
+
+Fiscal dates are used for comparison. CMS file-cohort years are download years, not fiscal periods. A 10% year-to-year display cue in the guided brief is an exploratory PulseLine rule, not a materiality, audit, or credit threshold. Change rates are withheld when period lengths differ by more than 30 days or fiscal periods overlap.
+
+## Operating scenario model
+
+Question: how would the simplified patient-service balance change under different revenue and expense assumptions?
+
+- `scenarioRevenue = baselineRevenue × (1 + revenueChangePct / 100)`
+- `scenarioExpenses = baselineExpenses × (1 + expenseChangePct / 100)`
+- `baselineBalance = baselineRevenue − baselineExpenses`
+- `scenarioBalance = scenarioRevenue − scenarioExpenses`
+- `balanceChange = scenarioBalance − baselineBalance`
+
+Also shown: revenue needed to equal scenario expenses, and the required change from baseline revenue when the denominator is usable.
+
+The output is a simplified patient-service scenario. It is not overall operating profit, net income, cash flow, or a forecast. Inputs are clamped from −95% to +400%. Those bounds are validation limits, not economically probable ranges. The model is disabled when financials are pending, when baseline fields are missing, or when the published result does not reconcile with the subtraction. Changing hospitals or reports resets assumptions. Scenario changes never write back to historical records, scores, or event classifications.
+
+## Stage 2: valuation readiness (not implemented)
+
+A future valuation feature would still need, at minimum:
+
+- Reconciled entity and transaction scope
+- Appropriate earnings or cash-flow measures
+- Debt and cash that can be used in a valuation identity
+- Capital expenditure and working-capital information
+- Explicit assumptions and a stated valuation basis
+- Credible comparable transactions if using transaction multiples
+
+Unavailable inputs must not be treated as zero. PulseLine does not generate enterprise values, equity values, purchase-price estimates, deal-attractiveness scores, or acquisition recommendations.
 
 ## Current architecture
 
 1. Financial research pack (`research/PulseLine_three_hospital_data.json`, evidence, dictionary, event log).
-2. Financial adapter (`lib/adapt-research.ts`) converts 12 hospital-year reports, preserving original CMS strings, report record IDs, file cohorts, fiscal dates, and nulls.
+2. Financial adapter (`lib/adapt-research.ts`) converts 12 hospital-year reports, preserving original CMS strings, report record IDs, file cohorts, fiscal dates, publication dates when present, and nulls.
 3. Extract validation (`lib/validate-extract.ts`) runs before normalize/score.
-4. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`). Thresholds and weights were not changed in this pass.
-5. Evidence ledger (`research/PulseLine_expanded_evidence_v1.json`) through `lib/adapt-evidence.ts`.
-6. Dashboard (`src/ui`) shows scored hospitals, research cases, and a hospital workspace with Overview, Reports, Events, and Ask.
-7. PulseLine Ask (`lib/ask`, `src/ui/ask`) answers hospital-scoped questions with structured retrieval. An optional on-device model may only explain approved results.
+4. Financial definitions (`lib/finance`) for measures, comparability, statements, period age, and the guided brief.
+5. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`). Thresholds and weights were not changed. The score is secondary in the workspace.
+6. Evidence ledger (`research/PulseLine_expanded_evidence_v1.json`) through `lib/adapt-evidence.ts`.
+7. Search-first explorer: area search, Kentucky county map, hospital cards, then an inline financial workspace.
+8. Workspace tabs: Overview, Financials, Scenarios, Evidence, Ask. One large financial view at a time.
+9. PulseLine Ask (`lib/ask`, `src/ui/ask`) answers hospital-scoped questions. Valuation and acquire/for-sale questions are declined.
 
-No hospital map, geocoding, or Cards/Map toggle is included.
+The production interface does not include invented hospitals or fake scores. Isolated scale tests used 120 development fixtures (`tests/fixtures/explorer-scale.ts`) and are not shown in the app.
 
 ## Hospitals
 
@@ -48,7 +105,7 @@ Research cases, financial coverage pending (no invented CCN, license, financials
 
 ## Scoring methodology
 
-Configurable in `lib/scoring-config.ts`.
+Configurable in `lib/scoring-config.ts`. Shown beside the secondary concern score as “How this score is calculated.”
 
 | Factor | Construction | Notes |
 | --- | --- | --- |
@@ -59,36 +116,34 @@ Configurable in `lib/scoring-config.ts`.
 | Cash / liquidity | Cash on Hand and in Banks / Less Total Operating Expense | Negative cash is preserved and excluded from the ratio |
 | Patient volume | Total Days / Total Bed Days Available | CMS fiscal report only |
 
-If no factor can be scored, score is null and status is **Insufficient data**. Status uses text, a distinct symbol, and color.
+If no factor can be scored, score is null and status is **Insufficient data**. The rubric is generated from the same configuration used by the calculation. The score is not enterprise value, creditworthiness, acquisition attractiveness, or a recommendation to transact.
 
 ## Structural events
 
-Shown separately from the financial score.
+Shown on Evidence, separate from financials.
 
 - Highlands acquisition (2019-08-01) and rename share one event group.
 - Paul B. Hall acquisition (effective 2021-12-01; announcement 2021-09-23) and rename share one event group.
 - Kentucky River September 2021 property sale is a property transaction, not a verified provider CHOW.
 - Quorum April 2020 bankruptcy and July 2020 emergence are parent events, not a verified Kentucky River hospital bankruptcy.
 
-Hospital pressure and community context are separate. No new weighted convergence score, forecast, or NPPES departure inference was added.
+A blank event log does not mean no events occurred.
 
-## Limitations
+## Geography
 
-- Revised CMS CSV publication dates are unverified.
-- Reporting-entity vs parent consolidation is not independently reconciled.
-- Kentucky River CCN transition effective date is unknown.
-- Event-time CCNs and legal-entity crosswalks are unresolved for the research cohort.
-- A null publication date excludes historical eligibility.
-- Outcomes stay unknown unless a sourced event says otherwise.
-- Workforce / NPPES, five-domain research, pre-event panels, and matched controls are pending.
+- County polygons: simplified U.S. Census Bureau cartographic county boundaries (public domain U.S. government work), Kentucky extract in `data/geo/ky-counties.json`.
+- Search can highlight a sourced county outline and fit the map to that county. City searches highlight the documented county when known; they do not draw city limits.
+- ZIP codes are facility postal strings, not Census ZCTA polygons. PulseLine does not invent a ZIP-area outline. The UI labels that limitation as “ZIP area outline unavailable.”
+- Research-pack latitude and longitude are null. PulseLine does not place a fabricated hospital marker, does not geocode at runtime, and does not request visitor location.
+- Kentucky River’s 400 Jett Drive vs 540 Jett Drive discrepancy is preserved in evidence details.
 
 ## PulseLine Ask
 
-Ask is a hospital-specific helper. Suggested questions, free-text lookup, follow-ups, copy, and answer-only PDF export work without downloading a model. Facts and calculations are produced by application code. The language model never invents or recalculates financial values.
+Ask is a supporting, hospital-specific helper. Suggested questions, free-text lookup, follow-ups, copy, and answer-only PDF export work without downloading a model. Facts and calculations are produced by application code. The language model never invents or recalculates financial values.
 
-If a device cannot run the optional model, Ask continues as **data lookup**. That label is shown on each answer. Conversations are scoped to the selected hospital, can be cleared, and are not persisted after the tab is closed.
+If a device cannot run the optional model, Ask continues as **data lookup**. Conversations are scoped to the selected hospital, can be cleared, and are not persisted after the tab is closed.
 
-Answer PDFs are generated in the browser and include only completed, selected answers: hospital name, questions, statements, periods, sources/report IDs, limitations, export date, and an experimental-use note.
+Answer PDFs are generated in the browser as **evidence notes**, not a completed diligence assessment. They include only completed, selected answers: hospital, periods, sources, limitations, scenario assumptions and computed values when present, export date, and an experimental-use note.
 
 ## On-device model
 
@@ -97,25 +152,28 @@ Default helper: **Llama 3.2 1B Instruct**, 4-bit MLC build `Llama-3.2-1B-Instruc
 | Topic | Detail |
 | --- | --- |
 | Runtime | [WebLLM](https://github.com/mlc-ai/web-llm) (`@mlc-ai/web-llm`), Apache-2.0 |
-| Why this model | Small enough for a first load, official MLC browser build, worker support |
-| Download | Official MLC size is about 700 MB. In local preview, WebLLM reported 412 MB fetched at 62% after 7 seconds (~665 MB implied). The download was stopped before completion. |
-| Cancel | **Cancel download** terminates the WebLLM worker. Ask stays on data lookup. |
+| Download | Official MLC size is about 700 MB. Optional; cancelled loads leave Ask on data lookup |
 | Hardware | WebGPU (Chrome / Edge 113+). No mobile-performance claim until physically tested |
-| Fallback | If WebGPU is missing, load fails, or the user cancels, Ask stays on data lookup |
-| License | Llama 3.2 Community License for the weights; do not redistribute the weights inside this repo |
 | Privacy | Inference stays on the visitor device. Questions are not sent to a remote model API |
 
-GitHub Pages still hosts only the static app. Model files are fetched by the browser when the visitor chooses **Load on-device helper**. Hugging Face must remain reachable for that optional path.
+## Limitations
 
-## Browser support
+- Revised CMS CSV publication dates are often unverified (`publication_date` null).
+- Reporting-entity vs parent consolidation is not independently reconciled.
+- Kentucky River CCN transition effective date is unknown.
+- Event-time CCNs and legal-entity crosswalks are unresolved for the research cohort.
+- A null publication date cannot establish pre-event availability.
+- Outcomes stay unknown unless a sourced event says otherwise.
+- Workforce / NPPES, five-domain research, pre-event panels, and matched controls are pending.
+- Hospital street coordinates are unverified.
+- Research-case ZIP codes are not in the current ledger.
+- The current dataset is five hospitals, not Kentucky-wide coverage.
 
-- Landing, hospital workspace, suggested questions, data-lookup answers, and PDF export: current Chrome, Edge, Firefox, and Safari with JavaScript enabled.
-- Optional on-device helper: WebGPU required. Firefox and Safari may be unavailable; the data-lookup path remains.
-- Viewport checks in development are not a substitute for a physical phone.
+## Browser support and GitHub Pages
 
-## GitHub Pages
+Landing, selector, map, workspace, charts, statements, What-if, Ask data lookup, and PDF export: current Chrome, Edge, Firefox, and Safari with JavaScript enabled. Viewport checks in development are not a substitute for a physical phone.
 
-Build with `PAGES_BASE=/PulseLine/` and publish the `dist/` folder. No server, database, account, or secret API key is required. The optional model download is a visitor-side request to Hugging Face, not part of the Pages artifact.
+Build with `PAGES_BASE=/PulseLine/` and publish the `dist/` folder. No server, database, account, or secret API key is required.
 
 ## How to run locally
 

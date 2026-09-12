@@ -6,11 +6,14 @@ export interface ResearchHospital {
   official_name: string;
   state: string;
   county: string;
+  county_fips?: string;
   current_ccn: string;
   historical_cost_report_ccn: string;
   address: string;
   historical_link_status: string;
   outcome_missingness: string;
+  ownership_category?: string | null;
+  rural_classification?: string | null;
 }
 
 export interface ResearchReport {
@@ -245,6 +248,9 @@ export function adaptResearchPack(input: unknown): ResearchAdaptResult {
       state: hospital.state,
       zip: zipFromCms(fields["Zip Code"]),
       county: hospital.county,
+      countyFips: typeof hospital.county_fips === "string" ? hospital.county_fips : null,
+      ownershipCategory: typeof hospital.ownership_category === "string" ? hospital.ownership_category : null,
+      ruralClassification: typeof hospital.rural_classification === "string" ? hospital.rural_classification : null,
       address: cmsStreet,
       fiscalYearStart: report.fiscal_start,
       fiscalYearEnd: report.fiscal_end,
@@ -252,6 +258,8 @@ export function adaptResearchPack(input: unknown): ResearchAdaptResult {
       fileCohort: report.file_cohort,
       sourceId: report.source_id,
       sourceUrl: source?.url ?? null,
+      publicationDate: source?.publication_date ?? null,
+      reportingScope: report.scope ?? null,
       periodDays: report.period_days,
       identityReviewStatus: identityUnresolved ? "unresolved" : "clear",
       classification: "observed",

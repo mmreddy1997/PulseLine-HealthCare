@@ -57,7 +57,7 @@ export function AskPane({
   const selectedAnswers = answers.filter((answer) => selectedIds.includes(answer.id) && canExportAnswer(answer));
   const exportState = buildExportDocument(context.hospitalName, selectedAnswers);
   const primaryChips = chips.filter((chip) => {
-    if (chip.id === "why_score" || chip.id === "missing") return true;
+    if (chip.id === "explain_measure" || chip.id === "why_score" || chip.id === "missing") return true;
     return context.kind !== "scored" && (chip.id === "events" || chip.id === "community");
   });
   const moreChips = chips.filter((chip) => !primaryChips.some((primary) => primary.id === chip.id));
@@ -224,7 +224,7 @@ export function AskPane({
       <div className="ask-aux">
         <div className={`export-bar ${selectedAnswers.length > 0 ? "has-selection" : ""}`} role="region" aria-label="Selected answers">
           {selectedAnswers.length === 0 ? (
-            <p className="tiny">No answers selected. Select a completed answer to download a short briefing.</p>
+            <p className="tiny">No answers selected. Select a completed answer to download evidence notes.</p>
           ) : (
             <p className="small">{selectedAnswers.length} selected</p>
           )}
@@ -242,8 +242,8 @@ export function AskPane({
         </div>
 
         <p className="tiny ask-footnote">
-          Downloads contain only selected answers, reporting periods, sources, and limitations. Experimental evidence.
-          Not a closure forecast.
+          Evidence notes include only selected questions and answers, periods, sources, limitations, and scenario
+          assumptions when present. Not a completed diligence report or investment recommendation.
         </p>
 
         <aside className="model-gate" aria-live="polite">

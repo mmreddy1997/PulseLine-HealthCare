@@ -21,7 +21,7 @@ export async function downloadAnswersPdf(doc: ExportDocument, filename: string):
     }
   };
 
-  write("PulseLine answer briefing", 16, true);
+  write("PulseLine evidence notes", 16, true);
   write(doc.hospitalName, 13, true);
   write(`Exported ${doc.exportedAt}`, 10);
   y += 8;
@@ -40,6 +40,14 @@ export async function downloadAnswersPdf(doc: ExportDocument, filename: string):
     write(answer.statement, 11);
     if (answer.periodLabel) write(`Period: ${answer.periodLabel}`, 10);
     write(`Kind: ${answer.kind.replaceAll("_", " ")}`, 10);
+    if (answer.scenario) {
+      write("Scenario assumptions", 11, true);
+      write(`Baseline period: ${answer.scenario.baselinePeriod ?? "Unknown"}`, 10);
+      write(`Assumed net patient revenue change: ${answer.scenario.revenueChangePct}%`, 10);
+      write(`Assumed patient-service expense change: ${answer.scenario.expenseChangePct}%`, 10);
+      for (const formula of answer.scenario.formulas) write(formula, 9);
+      write(answer.scenario.limitation, 9);
+    }
     if (answer.sources.length) {
       write("Sources", 11, true);
       for (const source of answer.sources) {

@@ -4,8 +4,9 @@ import type {
   HospitalView,
   StructuralEvent,
 } from "../../src/types.ts";
+import type { ScenarioResult } from "../scenario/whatif.ts";
 
-export const ANSWER_KINDS = ["reported", "calculated", "experimental_interpretation"] as const;
+export const ANSWER_KINDS = ["reported", "calculated", "experimental_interpretation", "scenario"] as const;
 export type AnswerKind = (typeof ANSWER_KINDS)[number];
 
 export const ANSWER_STATUSES = ["complete", "incomplete", "unavailable", "clarification", "declined"] as const;
@@ -26,8 +27,14 @@ export const ASK_INTENTS = [
   "clarify_total",
   "clarify_year",
   "unsupported_forecast",
+  "unsupported_valuation",
+  "identity_questions",
+  "event_scope",
+  "verify_figure",
+  "explain_measure",
   "hospital_switch",
   "prompt_injection",
+  "whatif_scenario",
   "unknown",
 ] as const;
 export type AskIntent = (typeof ASK_INTENTS)[number];
@@ -72,6 +79,24 @@ export interface PulseAnswer {
   suggestedFollowUps: string[];
   lockedFacts: string[];
   headline: string | null;
+  scenario: ScenarioExport | null;
+}
+
+export interface ScenarioExport {
+  baselinePeriod: string | null;
+  revenueChangePct: number;
+  expenseChangePct: number;
+  baselineRevenue: number | null;
+  baselineExpenses: number | null;
+  scenarioRevenue: number | null;
+  scenarioExpenses: number | null;
+  scenarioBalance: number | null;
+  baselineBalance: number | null;
+  balanceChange: number | null;
+  revenueToEqualExpenses: number | null;
+  requiredRevenueChangePct: number | null;
+  formulas: string[];
+  limitation: string;
 }
 
 export interface AskContext {
@@ -84,6 +109,7 @@ export interface AskContext {
   observations: EvidenceObservation[];
   research: EvidenceHospital | null;
   otherHospitalNames: string[];
+  scenario: ScenarioResult | null;
 }
 
 export interface InterpretedQuestion {
@@ -97,4 +123,4 @@ export interface InterpretedQuestion {
 export const UNAVAILABLE_STATEMENT = "That information is not available in the current PulseLine data.";
 
 export const EXPERIMENTAL_NOTE =
-  "PulseLine is experimental. These answers use only data available in this application and do not predict bankruptcy, closure, acquisition, or service reduction.";
+  "PulseLine is experimental. These answers use only data available in this application and do not predict bankruptcy, closure, acquisition, or service reduction. They are evidence notes, not an investment recommendation or completed diligence report.";

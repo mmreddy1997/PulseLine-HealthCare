@@ -3,6 +3,9 @@ import type { AskContext, ClarificationOption, InterpretedQuestion } from "./typ
 const FORECAST =
   /\b(predict|forecast|probability of (closure|bankruptcy)|next year'?s (score|revenue))\b|\b(will|going to)\b.{0,48}\b(close|fail|bankrupt|acquired|cut services?)\b/i;
 
+const VALUATION =
+  /\b(should (we|i) (buy|acquire)|is it (for sale|worth buying|a good deal)|what is it worth|enterprise value|purchase price|valuation|recommend (buying|acquiring)|acquisition target|undervalued|deal ready)\b/i;
+
 const INJECTION =
   /\b(ignore (all )?(previous|prior|above) (instructions|rules|grounding)|you are now|disregard (your|the) (rules|instructions)|system prompt|jailbreak)\b/i;
 
@@ -74,6 +77,9 @@ export function interpretQuestion(raw: string, context: AskContext): Interpreted
   if (FORECAST.test(question)) {
     return { intent: "unsupported_forecast", raw: question };
   }
+  if (VALUATION.test(question)) {
+    return { intent: "unsupported_valuation", raw: question };
+  }
 
   if (TOTAL_ONLY.test(question) && !HAS_REVENUE.test(question) && !HAS_EXPENSE.test(question) && !HAS_DAYS.test(question)) {
     return { intent: "clarify_total", raw: question };
@@ -87,16 +93,28 @@ export function interpretQuestion(raw: string, context: AskContext): Interpreted
     }
   }
 
-  if (/\b(why).{0,40}\bscore\b|\breceive this score\b/.test(lower)) {
+  if (/\b(why).{0,40}\bscore\b|\breceive this score\b|\bcontributes most\b|\bcontributes to the (concern )?score\b|\bfinancial pressures?\b/.test(lower)) {
     return { intent: "why_score", raw: question };
   }
-  if (/\b(revenue change|how did revenue|compared to (the )?previous|year.over.year|previous (available |comparable )?report)\b/.test(lower)) {
+  if (/\b(revenue change|how did revenue|revenue and expenses change|what changed between|compared to (the )?previous|year.over.year|previous (available |comparable )?report)\b/.test(lower)) {
     return { intent: "revenue_change", raw: question, year: years[0], yearKind: years[0] ? "fiscal_end" : undefined };
+  }
+  if (/\bverify before relying\b|\bshould i verify\b|\bbefore relying on this figure\b|\bevidence should i verify\b/.test(lower)) {
+    return { intent: "verify_figure", raw: question };
+  }
+  if (/\bexplain this (financial )?measure\b|\bwhat does (net patient revenue|this ratio|this figure) mean\b|\bwhy was this ratio excluded\b/.test(lower)) {
+    return { intent: "explain_measure", raw: question };
+  }
+  if (/\bidentity questions?\b|\bunresolved identity\b|\baddress discrepancy\b|\bcurrent ccn\b/.test(lower)) {
+    return { intent: "identity_questions", raw: question };
+  }
+  if (/\bprovider, parent, or property\b|\bevent about\b|\bevent scope\b/.test(lower)) {
+    return { intent: "event_scope", raw: question };
   }
   if (/\bnet patient revenue\b|\bnpr\b|\bwhat was (its |the )?revenue\b/.test(lower)) {
     return { intent: "net_patient_revenue", raw: question, year: years[0], yearKind: years[0] ? "fiscal_end" : undefined };
   }
-  if (HAS_EXPENSE.test(question) && !/\bmissing\b/.test(lower)) {
+  if (HAS_EXPENSE.test(question) && !/\bmissing\b/.test(lower) && !/\bscenario\b/.test(lower) && !/\bwhat.?if\b/.test(lower)) {
     return { intent: "operating_expenses", raw: question, year: years[0], yearKind: years[0] ? "fiscal_end" : undefined };
   }
   if (/\bcash\b/.test(lower) && !/\bmissing\b/.test(lower)) {
@@ -110,6 +128,9 @@ export function interpretQuestion(raw: string, context: AskContext): Interpreted
   }
   if (/\bcommunity\b|\bchna\b|\bcounty access\b|\bworkforce access\b/.test(lower)) {
     return { intent: "community_context", raw: question };
+  }
+  if (/\bwhat.?if\b|\bscenario\b|\brevenue or expenses change\b|\brevenue\/expense scenario\b|\bscenario assumptions\b/.test(lower)) {
+    return { intent: "whatif_scenario", raw: question };
   }
 
   return { intent: "unknown", raw: question };

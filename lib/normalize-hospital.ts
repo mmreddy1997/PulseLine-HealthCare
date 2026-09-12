@@ -21,6 +21,9 @@ export interface HospitalExtractRecord {
   state: string;
   zip?: string | null;
   county?: string | null;
+  countyFips?: string | null;
+  ownershipCategory?: string | null;
+  ruralClassification?: string | null;
   address?: string | null;
   fiscalYearStart?: string | null;
   fiscalYearEnd: string;
@@ -28,6 +31,8 @@ export interface HospitalExtractRecord {
   fileCohort?: number | null;
   sourceId?: string | null;
   sourceUrl?: string | null;
+  publicationDate?: string | null;
+  reportingScope?: string | null;
   periodDays?: number | null;
   identityReviewStatus: IdentityReviewStatus;
   classification: ObservationClassification;
@@ -118,6 +123,9 @@ export function normalizeHospital(record: HospitalExtractRecord): Hospital {
     state: record.state,
     zip: record.zip ?? null,
     county: record.county ?? null,
+    countyFips: record.countyFips ?? null,
+    ownershipCategory: record.ownershipCategory ?? null,
+    ruralClassification: record.ruralClassification ?? null,
     address: record.address ?? record.cmsCostReportAddress ?? null,
     fiscalYearStart: record.fiscalYearStart ?? null,
     fiscalYearEnd: record.fiscalYearEnd,
@@ -125,6 +133,8 @@ export function normalizeHospital(record: HospitalExtractRecord): Hospital {
     fileCohort: record.fileCohort ?? null,
     sourceId: record.sourceId ?? null,
     sourceUrl: record.sourceUrl ?? null,
+    publicationDate: record.publicationDate ?? null,
+    reportingScope: record.reportingScope ?? null,
     periodDays: record.periodDays ?? null,
     financials,
     dataQuality: {

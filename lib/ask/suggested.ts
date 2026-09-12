@@ -13,23 +13,43 @@ export function suggestedQuestions(context: AskContext): SuggestedQuestion[] {
 
   if (scored) {
     items.push({
-      id: "why_score",
-      intent: "why_score",
-      label: "Explain the score",
-      question: "Why did this hospital receive this score?",
+      id: "explain_measure",
+      intent: "explain_measure",
+      label: "Explain this measure",
+      question: "Explain this financial measure.",
     });
     items.push({
-      id: "npr",
-      intent: "net_patient_revenue",
-      label: "Net patient revenue",
-      question: "What was net patient revenue for this fiscal period?",
+      id: "why_score",
+      intent: "why_score",
+      label: "Score contributors",
+      question: "What contributes to the concern score?",
     });
     if (context.reports.length > 1) {
       items.push({
         id: "npr_change",
         intent: "revenue_change",
-        label: "How revenue changed",
-        question: "How did revenue change from the previous comparable report?",
+        label: "What changed",
+        question: "What changed between these reports?",
+      });
+    }
+    items.push({
+      id: "excluded",
+      intent: "explain_measure",
+      label: "Why excluded",
+      question: "Why was this ratio excluded?",
+    });
+    items.push({
+      id: "verify_figure",
+      intent: "verify_figure",
+      label: "What to verify",
+      question: "What evidence should I verify next?",
+    });
+    if (context.scenario?.enabled) {
+      items.push({
+        id: "whatif",
+        intent: "whatif_scenario",
+        label: "Explain my scenario",
+        question: "Explain my scenario assumptions and results.",
       });
     }
   }
@@ -37,14 +57,26 @@ export function suggestedQuestions(context: AskContext): SuggestedQuestion[] {
   items.push({
     id: "missing",
     intent: "missing_excluded",
-    label: "What is missing?",
-    question: "What information is missing or excluded?",
+    label: "Missing or excluded",
+    question: "Which figures are missing or excluded?",
   });
   items.push({
     id: "events",
     intent: "structural_events",
-    label: "Documented events",
-    question: "What documented events relate to this hospital?",
+    label: "Documented transactions",
+    question: "What transactions or parent-company events are documented?",
+  });
+  items.push({
+    id: "event_scope",
+    intent: "event_scope",
+    label: "Event scope",
+    question: "Is this event about the provider, parent, or property?",
+  });
+  items.push({
+    id: "identity",
+    intent: "identity_questions",
+    label: "Identity questions",
+    question: "What identity questions remain unresolved?",
   });
   items.push({
     id: "community",

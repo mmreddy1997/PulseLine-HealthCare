@@ -30,7 +30,9 @@ export function AnswerCard({
       ? "Reported CMS value, rounded. Not a current estimate."
       : answer.kind === "calculated"
         ? "Calculated from PulseLine reports. Not a forecast."
-        : "Experimental interpretation of available PulseLine evidence.";
+        : answer.kind === "scenario"
+          ? "Illustrative scenario—not a forecast. Not reported data."
+          : "Experimental interpretation of available PulseLine evidence.";
 
   async function copy() {
     await navigator.clipboard.writeText(formatAnswerText(answer));

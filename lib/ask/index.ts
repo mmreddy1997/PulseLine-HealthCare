@@ -13,6 +13,7 @@ export type {
   ClarificationOption,
   InterpretedQuestion,
   PulseAnswer,
+  ScenarioExport,
 } from "./types.ts";
 export { EXPERIMENTAL_NOTE, UNAVAILABLE_STATEMENT } from "./types.ts";
 export type { ExportDocument, ExportResult } from "./export.ts";

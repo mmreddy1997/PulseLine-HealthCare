@@ -25,6 +25,10 @@ out/
 coverage/
 *.tsbuildinfo
 
+# Downloaded raw geography (Kentucky extract is kept)
+data/geo/us-counties-raw.json
+data/geo/*.zip
+
 # Local junk
 .DS_Store
 Thumbs.db

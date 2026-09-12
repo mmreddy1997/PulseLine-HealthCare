@@ -8,6 +8,7 @@ export interface ExportAnswer {
   sources: { label: string; url: string | null; reportId: string | null }[];
   limitations: string[];
   kind: PulseAnswer["kind"];
+  scenario: PulseAnswer["scenario"];
 }
 
 export interface ExportDocument {
@@ -46,6 +47,7 @@ export function buildExportDocument(
         sources: answer.sources,
         limitations: answer.limitations,
         kind: answer.kind,
+        scenario: answer.scenario,
       })),
     },
   };
@@ -65,6 +67,16 @@ export function formatAnswerText(answer: PulseAnswer): string {
     `Question: ${answer.question}`,
     `Answer: ${answer.statement}`,
     `Kind: ${answer.kind.replaceAll("_", " ")}`,
+    answer.scenario
+      ? [
+          "Scenario assumptions:",
+          `Baseline period: ${answer.scenario.baselinePeriod ?? "Unknown"}`,
+          `Assumed net patient revenue change: ${answer.scenario.revenueChangePct}%`,
+          `Assumed patient-service expense change: ${answer.scenario.expenseChangePct}%`,
+          ...answer.scenario.formulas,
+          answer.scenario.limitation,
+        ].join("\n")
+      : null,
     sources ? `Sources:\n${sources}` : null,
     answer.limitations.length ? `Limitations:\n${answer.limitations.join("\n")}` : null,
   ]
