@@ -1847,16 +1847,16 @@ h1 {
   left: 0;
   top: calc(100% + 8px);
   z-index: 6;
-  width: max(100%, 14rem);
-  max-width: min(22rem, 70vw);
+  width: max(100%, 16rem);
+  max-width: min(24rem, 74vw);
   margin: 0;
   padding: 10px 12px;
   border-radius: 12px;
   background: var(--ink);
   color: var(--page);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.45;
   box-shadow: 0 8px 24px rgb(25 62 52 / 0.18);
 }
 

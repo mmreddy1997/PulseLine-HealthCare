@@ -1,25 +1,40 @@
 import { useRef } from "react";
-import { MEASURES, type MeasureId } from "../../../lib/finance/index.ts";
+import { MEASURES } from "../../../lib/finance/index.ts";
 import { clampIndex, type ExplorerHospital } from "../../../lib/explorer/index.ts";
 import { StatusGlyph } from "../hospital-display.tsx";
 import { money, statusClass } from "../format.ts";
+
+const CARD_METRIC_TIPS = {
+  net_patient_revenue: {
+    meaning: "Money this hospital reported earning from patient care in the latest fiscal report, after usual billing adjustments.",
+    caveat: "Not every dollar the hospital took in, and not a price or valuation.",
+  },
+  patient_service_expenses: {
+    meaning: "What this hospital reported spending to provide patient care in that same fiscal report.",
+    caveat: "Not a complete operating-cost total, and not the same as cash paid out.",
+  },
+  cash: {
+    meaning: "Cash the hospital reported on hand and in banks at the end of that fiscal report.",
+    caveat: "A snapshot only — not how long the cash will last, and not checked for restricted funds.",
+  },
+} as const;
 
 function CardMetric({
   measureId,
   value,
 }: {
-  measureId: MeasureId;
+  measureId: keyof typeof CARD_METRIC_TIPS;
   value: number | null;
 }) {
   const measure = MEASURES[measureId];
+  const tip = CARD_METRIC_TIPS[measureId];
   const tipId = `card-metric-${measureId}`;
-  const tip = `${measure.definition} ${measure.not}`;
   return (
     <div className="card-metric" tabIndex={0} aria-describedby={tipId}>
       <dt>{measure.label}</dt>
       <dd>{money(value)}</dd>
       <p id={tipId} className="card-metric-tip" role="tooltip">
-        {tip}
+        {tip.meaning} {tip.caveat}
       </p>
     </div>
   );
