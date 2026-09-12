@@ -22,7 +22,7 @@ import {
   visibleSelectedHospitalId,
   ZIP_OUTLINE_UNAVAILABLE,
 } from "../lib/explorer/index.ts";
-import { geometryBounds, padViewBox, projectedBounds } from "../lib/geo/bounds.ts";
+import { fitAspectViewBox, geometryBounds, padViewBox, projectedBounds, scaleViewBox } from "../lib/geo/bounds.ts";
 import { geometryToPath, projectKentucky } from "../lib/geo/project.ts";
 import { loadResearchDashboard } from "../lib/pipeline.ts";
 import { SCALE_FIXTURE_SIZE, scaleExplorerFixture } from "./fixtures/explorer-scale.ts";
@@ -254,6 +254,11 @@ describe("map and list matching", () => {
     assert.ok(box);
     const padded = padViewBox(box, 24);
     assert.ok(padded.width <= 800 && padded.height <= 480);
+    const fitted = fitAspectViewBox(box, 800, 480, 28);
+    assert.ok(Math.abs(fitted.width / fitted.height - 800 / 480) < 0.001);
+    const closer = scaleViewBox(fitted, 2);
+    assert.ok(closer.width < fitted.width && closer.height < fitted.height);
+    assert.ok(Math.abs(closer.x + closer.width / 2 - (fitted.x + fitted.width / 2)) < 0.001);
   });
 
   it("clusters overlapping fixture coordinates without touching production records", () => {

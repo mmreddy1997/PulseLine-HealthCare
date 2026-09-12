@@ -155,8 +155,8 @@ export function AboutPulseLine({
       <section id="about-scoring">
         <h2>Scoring methodology</h2>
         <p className="tiny">
-          Thresholds and weights come from <code>lib/scoring-config.ts</code>. They are experimental assumptions. The
-          displayed total uses the unrounded calculation, then rounds once.
+          Thresholds and weights are experimental assumptions. The displayed total uses the unrounded calculation, then
+          rounds once.
         </p>
         <p className="tiny">{SCORE_NOT}</p>
         <details>

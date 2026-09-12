@@ -215,7 +215,6 @@ a {
 .answer-card,
 .content-panel,
 .evidence-shelf,
-.context-rail,
 .ask-card {
   background: var(--ink-2);
   border: 0;
@@ -426,11 +425,11 @@ a {
 
 .ask-desk {
   display: grid;
-  grid-template-columns: minmax(200px, 0.7fr) minmax(0, 1.3fr) minmax(200px, 0.75fr);
+  grid-template-columns: minmax(200px, 0.7fr) minmax(0, 1.8fr);
   grid-template-areas:
-    "shelf ask rail"
-    ". composer ."
-    "aux aux aux";
+    "shelf ask"
+    ". composer"
+    "aux aux";
   gap: 16px;
   align-items: start;
 }
@@ -447,16 +446,11 @@ a {
   grid-area: composer;
 }
 
-.ask-desk .context-rail {
-  grid-area: rail;
-}
-
 .ask-desk .ask-aux {
   grid-area: aux;
 }
 
 .evidence-shelf,
-.context-rail,
 .ask-card,
 .content-panel {
   padding: 20px;
@@ -475,8 +469,7 @@ a {
 
 .shelf-notes,
 .signal-list,
-.reason-list,
-.answer-list {
+.reason-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -506,9 +499,21 @@ a {
   margin: 10px 0 16px;
 }
 
+.answer-deck {
+  margin-top: 8px;
+}
+
+.answer-slide {
+  outline: none;
+}
+
+.answer-slide .chip {
+  margin: 8px 8px 0 0;
+}
+
 .answer-card {
   padding: 22px;
-  margin: 12px 0;
+  margin: 0;
   background: var(--soft);
   box-shadow: none;
 }
@@ -784,6 +789,13 @@ button:disabled {
     border-radius: 0;
   }
 
+  .hospital-bar.is-compact {
+    flex-direction: row;
+    background: var(--ink-2);
+    padding: 8px 14px;
+    border-radius: 18px;
+  }
+
   .coverage-line {
     background: var(--soft);
     border-radius: 999px;
@@ -1024,7 +1036,7 @@ button:disabled {
 .change-card-actions .chip,
 .what-changed .chip,
 .change-card-actions summary,
-.reliance-panel summary {
+.reliance-more summary {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -1032,8 +1044,46 @@ button:disabled {
 }
 
 .change-card-actions details,
-.reliance-panel details {
+.reliance-more {
   flex: 1 1 12rem;
+}
+
+.reliance-panel > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.reliance-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.reliance-panel > summary h3 {
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+.reliance-panel > summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  width: 1.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--paper-dim);
+}
+
+.reliance-panel[open] > summary::after {
+  content: "−";
+}
+
+.reliance-body {
+  margin-top: 14px;
 }
 
 .reliance-list {
@@ -1193,6 +1243,7 @@ button:disabled {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 800 / 480;
   max-height: 480px;
 }
 
@@ -1201,6 +1252,8 @@ button:disabled {
   stroke: #4f615a;
   stroke-width: 1.2;
   cursor: pointer;
+  outline: none;
+  vector-effect: non-scaling-stroke;
 }
 
 .ky-county.has-hospitals {
@@ -1210,10 +1263,17 @@ button:disabled {
 .ky-county.is-selected {
   fill: #185c46;
   stroke: #123f31;
+  stroke-width: 2;
+}
+
+.ky-county:focus,
+.ky-county:focus-visible {
+  outline: none;
 }
 
 .ky-county:focus-visible {
-  outline: 2px solid #193e34;
+  stroke: #193e34;
+  stroke-width: 2.4;
 }
 
 .ky-count {
@@ -1235,8 +1295,10 @@ button:disabled {
 
 .view-toggle {
   display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0;
 }
 
 .hospital-preview {
@@ -1589,6 +1651,14 @@ h1 {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
+  align-items: center;
+}
+
+.map-zoom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .ky-map svg {
@@ -1651,6 +1721,10 @@ h1 {
   box-shadow: 0 0 0 1px var(--rule);
 }
 
+.browse-card > .btn-primary {
+  margin-top: 16px;
+}
+
 .browse-card.is-selected {
   box-shadow: 0 0 0 2px var(--forest);
   background: #f3f8f4;
@@ -1700,11 +1774,51 @@ h1 {
   background: transparent;
 }
 
+.hospital-bar-sentinel {
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
 .hospital-bar.is-sticky {
   position: sticky;
-  top: 0;
+  top: 8px;
   z-index: 5;
   background: var(--ink-2);
+}
+
+.hospital-bar.is-compact {
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgb(25 62 52 / 0.12);
+}
+
+.hospital-bar.is-compact h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.hospital-bar.is-compact .hospital-bar-actions {
+  flex-wrap: nowrap;
+}
+
+.hospital-bar.is-compact .period-select {
+  margin-bottom: 0;
+}
+
+.hospital-bar.is-compact .sticky-period {
+  min-width: 9.5rem;
+}
+
+.hospital-bar.is-compact .period-select select,
+.hospital-bar.is-compact .chip,
+.hospital-bar.is-compact .status-pill {
+  min-height: 36px;
+  padding: 6px 12px;
 }
 
 .sticky-period {
@@ -1719,15 +1833,27 @@ h1 {
 }
 
 .financial-view-controls {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+  column-gap: 28px;
   align-items: end;
   margin-bottom: 16px;
 }
 
-.financial-view-controls label,
-.financial-view-controls select {
+.financial-view-controls .chart-unit-note {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.financial-view-controls label {
   display: grid;
   gap: 6px;
+  min-width: 0;
+}
+
+.financial-view-controls select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .financial-view-controls select,
@@ -1764,13 +1890,25 @@ h1 {
 }
 
 .chart-caption,
-.chart-toolbar,
 .chart-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   align-items: center;
+}
+
+.chart-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.chart-toolbar .tab,
+.chart-toolbar .chip {
+  margin: 0;
 }
 
 .chart-unit,
@@ -1900,6 +2038,7 @@ h1 {
 }
 
 @media (max-width: 899px) {
+  .financial-view-controls,
   .financial-view-layout,
   .card-metrics {
     grid-template-columns: 1fr;
@@ -1913,8 +2052,9 @@ h1 {
     max-height: 280px;
   }
 
-  .hospital-bar.is-sticky {
-    position: static;
+  .hospital-bar.is-compact .hospital-bar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 

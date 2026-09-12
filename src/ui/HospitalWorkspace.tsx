@@ -189,19 +189,6 @@ function EvidenceShelf({
   );
 }
 
-function ContextRail({ pending }: { pending: boolean }) {
-  return (
-    <aside className="context-rail" aria-label="Keep the context">
-      <h3>Keep the context</h3>
-      <p>This answer uses only the selected hospital’s public data.</p>
-      <p>Missing information stays visible. A property sale does not establish a provider ownership change.</p>
-      {pending ? <p>Research cases have no score or scenario model until financial data is available.</p> : null}
-      <h4>Evidence notes</h4>
-      <p>Download selected answers only. These are evidence notes, not a completed diligence assessment.</p>
-    </aside>
-  );
-}
-
 export function HospitalWorkspace({
   title,
   subtitle,
@@ -251,6 +238,8 @@ export function HospitalWorkspace({
   const askWithScenario = useMemo(() => ({ ...askContext, scenario }), [askContext, scenario]);
   const wide = useWideSplit();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const [barSentinel, setBarSentinel] = useState<HTMLDivElement | null>(null);
+  const [compactBar, setCompactBar] = useState(false);
   const onCloseRef = useRef(onClose);
   const openedId = view?.hospital.hospitalId ?? research?.hospitalId ?? title;
   const ccnLine = view
@@ -283,31 +272,48 @@ export function HospitalWorkspace({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [openedId]);
 
+  useEffect(() => {
+    if (!barSentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setCompactBar(!(entry?.isIntersecting ?? true));
+      },
+      { threshold: 0, rootMargin: "-8px 0px 0px 0px" },
+    );
+    observer.observe(barSentinel);
+    return () => observer.disconnect();
+  }, [barSentinel]);
+
   const showAskDesk = pane === "ask" && wide;
 
   return (
     <section id="hospital-financials" className="workspace is-inline" aria-labelledby="workspace-title">
-      <div className="hospital-bar is-sticky">
+      <div ref={setBarSentinel} className="hospital-bar-sentinel" aria-hidden="true" />
+      <div className={`hospital-bar is-sticky${compactBar ? " is-compact" : ""}`}>
         <div>
           <h2 id="workspace-title" ref={headingRef} tabIndex={-1}>
             {title}
           </h2>
-          <p className="muted">
-            {[subtitle, ccnLine].filter(Boolean).join(" · ")}
-            {pending ? " · Financial data pending" : ""}
-          </p>
-          {view ? (
-            <p className="tiny">
-              Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
-            </p>
-          ) : (
-            <p className="tiny">Identity fields were not invented for this research case.</p>
+          {compactBar ? null : (
+            <>
+              <p className="muted">
+                {[subtitle, ccnLine].filter(Boolean).join(" · ")}
+                {pending ? " · Financial data pending" : ""}
+              </p>
+              {view ? (
+                <p className="tiny">
+                  Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
+                </p>
+              ) : (
+                <p className="tiny">Identity fields were not invented for this research case.</p>
+              )}
+            </>
           )}
         </div>
         <div className="hospital-bar-actions">
           {reports.length > 0 ? (
             <label className="period-select sticky-period">
-              <span>Reporting period</span>
+              <span className={compactBar ? "visually-hidden" : undefined}>Reporting period</span>
               <select value={view?.hospital.id ?? ""} onChange={(event) => onSelectReport(event.target.value)}>
                 {reports.map((report) => (
                   <option key={report.hospital.id} value={report.hospital.id}>
@@ -320,12 +326,14 @@ export function HospitalWorkspace({
           {pending ? (
             <p className="status-pill status-pending">
               <StatusGlyph status="pending" />
-              Financial data pending
+              {compactBar ? "Pending" : "Financial data pending"}
             </p>
           ) : view ? (
             <p className={`status-pill ${statusClass(view.financial.status)}`}>
               <StatusGlyph status={view.financial.status} />
-              Experimental score {view.financial.score ?? "none"}
+              {compactBar
+                ? `${view.financial.score ?? "none"} · ${view.financial.status}`
+                : `Experimental score ${view.financial.score ?? "none"}`}
             </p>
           ) : null}
           <button type="button" className="chip chip-quiet" onClick={onClose}>
@@ -378,7 +386,6 @@ export function HospitalWorkspace({
             onSelectedIds={onSelectedIds}
             onClear={onClearConversation}
           />
-          <ContextRail pending={pending} />
         </div>
       ) : (
         <div className="workspace-body">

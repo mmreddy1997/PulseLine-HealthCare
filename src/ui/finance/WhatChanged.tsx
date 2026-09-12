@@ -123,31 +123,25 @@ function ReliancePanel({
     displayedMissing,
   });
   const compact = grouped.priority.slice(0, 4);
+  const caveatCount = grouped.priority.length + grouped.additional.length;
+  const summaryHint =
+    caveatCount === 0 ? "Open if you need the caveats" : `${caveatCount} ${caveatCount === 1 ? "caveat" : "caveats"}`;
   return (
-    <aside className="reliance-panel" aria-labelledby="reliance-title">
-      <h3 id="reliance-title">Before relying on these figures</h3>
-      <p className="tiny">
-        Generated from the selected records. Fiscal-end age is not a publication date. Unknown publication dates limit
-        point-in-time claims; they do not block labeled retrospective viewing.
-      </p>
-      {compact.length === 0 ? (
-        <p className="tiny">No finding-specific gaps were generated for this comparison.</p>
-      ) : (
-        <ul className="reliance-list">
-          {compact.map((gap) => (
-            <li key={gap.id}>
-              <span className="label">{GAP_KIND_LABELS[gap.kind]}</span>
-              <strong>{gap.label}</strong>
-              <p className="tiny">{gap.detail}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-      {grouped.additional.length > 0 || grouped.priority.length > compact.length ? (
-        <details>
-          <summary>More evidence gaps</summary>
+    <details className="reliance-panel">
+      <summary>
+        <h3 id="reliance-title">Before relying on these figures</h3>
+        <span className="tiny">{summaryHint}</span>
+      </summary>
+      <div className="reliance-body">
+        <p className="tiny">
+          Generated from the selected records. Fiscal-end age is not a publication date. Unknown publication dates
+          limit point-in-time claims; they do not block labeled retrospective viewing.
+        </p>
+        {compact.length === 0 ? (
+          <p className="tiny">No finding-specific gaps were generated for this comparison.</p>
+        ) : (
           <ul className="reliance-list">
-            {[...grouped.priority.slice(compact.length), ...grouped.additional].map((gap) => (
+            {compact.map((gap) => (
               <li key={gap.id}>
                 <span className="label">{GAP_KIND_LABELS[gap.kind]}</span>
                 <strong>{gap.label}</strong>
@@ -155,9 +149,23 @@ function ReliancePanel({
               </li>
             ))}
           </ul>
-        </details>
-      ) : null}
-    </aside>
+        )}
+        {grouped.additional.length > 0 || grouped.priority.length > compact.length ? (
+          <details className="reliance-more">
+            <summary>More evidence gaps</summary>
+            <ul className="reliance-list">
+              {[...grouped.priority.slice(compact.length), ...grouped.additional].map((gap) => (
+                <li key={gap.id}>
+                  <span className="label">{GAP_KIND_LABELS[gap.kind]}</span>
+                  <strong>{gap.label}</strong>
+                  <p className="tiny">{gap.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+      </div>
+    </details>
   );
 }
 
