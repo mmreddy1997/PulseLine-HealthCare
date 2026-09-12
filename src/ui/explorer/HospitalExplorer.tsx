@@ -71,12 +71,7 @@ export function HospitalExplorer({
     <section id="hospitals" className="explorer" aria-labelledby="explorer-title">
       <div className="explorer-head">
         <h1 id="explorer-title">Hospital financial explorer</h1>
-        <p className="tiny">
-          Historical public finances for one hospital at a time — not a closure forecast.{" "}
-          <a href="#about">2-minute story</a>
-          {" · "}
-          <a href="#about-pitch">Pitch</a>
-        </p>
+        <p className="tiny">Historical public finances for one hospital at a time — not a closure forecast.</p>
       </div>
 
       <div className="explorer-split">
@@ -110,7 +105,6 @@ export function HospitalExplorer({
             setQuery("");
             chooseArea(allKentuckyArea(), "kentucky");
           }}
-          onBackToArea={() => setMapFocus(area.kind === "all" ? "kentucky" : "area")}
         />
       </div>
 

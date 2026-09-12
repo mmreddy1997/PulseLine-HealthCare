@@ -4,29 +4,6 @@ import { SCORE_NOT, rubricBands } from "../../../lib/score-rubric.ts";
 import { ScoreRubricPanel } from "../score/ScoreRubric.tsx";
 import type { HospitalView } from "../../types.ts";
 
-const PITCH_SLIDES = [
-  {
-    title: "Who this is for",
-    body: "A healthcare strategy, corporate-development, or research reviewer who has to understand one rural hospital from public records this weekend.",
-  },
-  {
-    title: "The problem",
-    body: "CMS files, news, and identity records do not line up. One bad year is easy to read as “this hospital will close.” Two acquired hospitals and two stressed hospitals in this set show why that shortcut fails.",
-  },
-  {
-    title: "What PulseLine does",
-    body: "Search a Kentucky hospital, read what changed between two published reports, open the matching chart, try an illustrative operating scenario, and ask a sourced question. PulseLine shows gaps instead of filling them.",
-  },
-  {
-    title: "What we can show today",
-    body: "Five Kentucky hospitals. Three have historical CMS reports. Paul B. Hall and Highlands stay “Financial data pending” on purpose. PulseLine does not invent scores, financials, or closure predictions.",
-  },
-  {
-    title: "Try it",
-    body: "Open Explorer. Search Morgan County ARH → View financials → Overview chart → What changed? → Scenarios → Ask “What changed?” Then search Paul B. Hall to see pending data without a fake score.",
-  },
-] as const;
-
 export function AboutPulseLine({
   hospitalView = null,
 }: {
@@ -58,66 +35,9 @@ export function AboutPulseLine({
           hospital, read the published record, and try a labeled what-if.
         </p>
         <p>
-          <a href="#about-pitch">Shareable pitch</a>
-          {" · "}
-          <a href="#about-try">3-minute walkthrough</a>
-          {" · "}
           <a href="#hospitals">Open Explorer</a>
         </p>
       </header>
-
-      <section id="about-understand">
-        <h2>In two minutes</h2>
-        <ul>
-          <li>
-            <strong>Customer.</strong> Healthcare M&amp;A, strategy, and acquisition-research reviewers.
-          </li>
-          <li>
-            <strong>Job.</strong> Choose one hospital, understand its historical financial condition, and decide what
-            still needs investigation.
-          </li>
-          <li>
-            <strong>Product.</strong> Search → chart → What changed? → illustrative scenario → sourced Ask.
-          </li>
-          <li>
-            <strong>Not this.</strong> Not a validated prediction model, valuation engine, or acquisition recommendation.
-            Ask answers stay deterministic unless a generated line is approved and templated.
-          </li>
-        </ul>
-      </section>
-
-      <section id="about-pitch">
-        <h2>Pitch deck</h2>
-        <p className="tiny">
-          Five slides for judges and teammates. Share this page: add <code>#about-pitch</code> to the PulseLine URL.
-        </p>
-        <ol className="pitch-slides">
-          {PITCH_SLIDES.map((slide, index) => (
-            <li key={slide.title} className="pitch-slide">
-              <p className="label">
-                Slide {index + 1} of {PITCH_SLIDES.length}
-              </p>
-              <h3>{slide.title}</h3>
-              <p>{slide.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section id="about-try">
-        <h2>3-minute walkthrough</h2>
-        <ol>
-          <li>Search <strong>Morgan County ARH</strong> and choose View financials.</li>
-          <li>On <strong>Overview</strong>, read a chart. Then scroll to <strong>What changed?</strong> Both fiscal periods are shown.</li>
-          <li>Open <strong>Scenarios</strong>. Raise revenue, read the signed bars, reset. It is not a forecast.</li>
-          <li>Open <strong>Ask</strong> and type “What changed?” Generative AI does not need to run.</li>
-          <li>Search <strong>Paul B. Hall</strong>. Financial data pending means we did not invent a score.</li>
-        </ol>
-        <p className="tiny">
-          Hidden gems: Kentucky River keeps the address and identity flags. Facility-versus-parent events are not treated
-          as the same thing. Ask rejects unsupported closure or acquisition predictions.
-        </p>
-      </section>
 
       <section id="about-what">
         <h2>What PulseLine does</h2>

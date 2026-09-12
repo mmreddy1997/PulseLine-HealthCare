@@ -1743,13 +1743,6 @@ h1 {
   align-items: center;
 }
 
-.map-zoom {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-left: auto;
-}
-
 .ky-map svg {
   max-height: 560px;
 }
@@ -2105,34 +2098,10 @@ h1 {
   gap: 16px;
 }
 
-.pitch-slides {
-  display: grid;
-  gap: 12px;
-  padding: 0;
-  margin: 12px 0 0;
-  list-style: none;
-}
-
-.pitch-slide {
-  background: var(--page);
-  border-radius: 16px;
-  padding: 14px 16px;
-}
-
-.pitch-slide h3 {
-  margin: 4px 0 8px;
-  font-size: 1.05rem;
-}
-
 @media print {
   .site-header,
   .explorer {
     display: none;
-  }
-
-  .pitch-slide {
-    break-inside: avoid;
-    border: 1px solid #ccc;
   }
 }
 

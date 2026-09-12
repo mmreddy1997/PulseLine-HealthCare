@@ -332,13 +332,9 @@ export function HospitalWorkspace({
               {[subtitle, ccnLine].filter(Boolean).join(" · ")}
               {pending ? " · Financial data pending" : ""}
             </p>
-            {view ? (
-              <p className="tiny">
-                Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
-              </p>
-            ) : (
-              <p className="tiny">Identity fields were not invented for this research case.</p>
-            )}
+            {view?.hospital.dataQuality.identityStatus === "unresolved" ? (
+              <p className="tiny">Identity: review required</p>
+            ) : null}
           </div>
         </div>
         <div className="hospital-bar-actions">

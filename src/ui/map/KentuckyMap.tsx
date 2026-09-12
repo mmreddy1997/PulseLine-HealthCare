@@ -4,8 +4,6 @@ import type { AreaSelection } from "../../../lib/explorer/search.ts";
 import { matchingCountyFips, pluralHospitals, type ExplorerHospital } from "../../../lib/explorer/index.ts";
 import {
   MAP_ZOOM_FIT,
-  MAP_ZOOM_MAX,
-  MAP_ZOOM_MIN,
   MAP_ZOOM_STEP,
   clampMapZoom,
   fitAspectViewBox,
@@ -38,7 +36,6 @@ export function KentuckyMap({
   onSelectCounty,
   onSelectHospital,
   onShowAll,
-  onBackToArea,
 }: {
   hospitals: ExplorerHospital[];
   area: AreaSelection;
@@ -47,7 +44,6 @@ export function KentuckyMap({
   onSelectCounty: (fips: string, name: string) => void;
   onSelectHospital?: (hospitalId: string) => void;
   onShowAll: () => void;
-  onBackToArea: () => void;
 }) {
   const [zoom, setZoom] = useState(MAP_ZOOM_FIT);
   const selectedHospital = hospitals.find((item) => item.hospitalId === selectedHospitalId) ?? null;
@@ -73,8 +69,6 @@ export function KentuckyMap({
   }, [focusFips, mapFocus]);
 
   const viewBox = useMemo(() => viewBoxString(scaleViewBox(fitBox, zoom)), [fitBox, zoom]);
-  const canZoomIn = zoom < MAP_ZOOM_MAX;
-  const canZoomOut = zoom > MAP_ZOOM_MIN;
 
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -100,20 +94,9 @@ export function KentuckyMap({
   return (
     <figure className="ky-map">
       <div className="map-toolbar">
-        <button type="button" className="chip" onClick={onBackToArea} disabled={area.kind === "all" && mapFocus === "kentucky"}>
-          Back to selected area
-        </button>
         <button type="button" className="chip chip-quiet" onClick={onShowAll}>
           Show all Kentucky
         </button>
-        <div className="map-zoom" role="group" aria-label="Map zoom">
-          <button type="button" className="chip" onClick={() => adjustZoom(-MAP_ZOOM_STEP)} disabled={!canZoomOut}>
-            Zoom out
-          </button>
-          <button type="button" className="chip" onClick={() => adjustZoom(MAP_ZOOM_STEP)} disabled={!canZoomIn}>
-            Zoom in
-          </button>
-        </div>
       </div>
       <svg
         ref={svgRef}
@@ -212,8 +195,8 @@ export function KentuckyMap({
         {markers.length === 0
           ? " Hospital street markers are omitted because sourced latitude and longitude are not verified."
           : " Markers appear only for hospitals with sourced coordinates."}{" "}
-        After a county is selected, use Zoom in, Zoom out, Ctrl + scroll, or + and −. Scrolling without Ctrl still
-        moves the page.
+        After a county is selected, zoom with Ctrl + scroll, or click the map and use + and −. Scrolling without Ctrl
+        still moves the page.
       </figcaption>
     </figure>
   );

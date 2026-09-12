@@ -123,10 +123,6 @@ export function App() {
           setPage("about");
           window.location.hash = "about";
         }}
-        onPitch={() => {
-          setPage("about");
-          window.location.hash = "about-pitch";
-        }}
       />
 
       {page === "about" ? (
