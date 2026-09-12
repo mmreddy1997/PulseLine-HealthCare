@@ -1,5 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import {
+  allHospitalSuggestions,
   buildSearchSuggestions,
   groupSuggestions,
   type CountyRef,
@@ -24,9 +25,13 @@ export function AreaSearch({
 }) {
   const listId = useId();
   const [open, setOpen] = useState(false);
+  const [listingAll, setListingAll] = useState(false);
   const suggestions = useMemo(
-    () => buildSearchSuggestions(hospitals, counties, query),
-    [hospitals, counties, query],
+    () =>
+      listingAll && !query.trim()
+        ? allHospitalSuggestions(hospitals)
+        : buildSearchSuggestions(hospitals, counties, query),
+    [hospitals, counties, query, listingAll],
   );
   const groups = groupSuggestions(suggestions);
 
@@ -45,6 +50,7 @@ export function AreaSearch({
             placeholder="Hospital, city, county, or ZIP"
             onChange={(event) => {
               onQueryChange(event.target.value);
+              setListingAll(false);
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
@@ -55,17 +61,34 @@ export function AreaSearch({
               if (event.key === "Enter" && suggestions[0]) {
                 event.preventDefault();
                 onChoose(suggestions[0]);
+                setListingAll(false);
                 setOpen(false);
               }
             }}
           />
         </label>
         {query ? (
-          <button type="button" className="chip chip-quiet" onClick={onClear}>
+          <button
+            type="button"
+            className="chip chip-quiet"
+            onClick={() => {
+              onClear();
+              setListingAll(false);
+              setOpen(false);
+            }}
+          >
             Clear search
           </button>
         ) : (
-          <button type="button" className="chip chip-quiet" onClick={onClear}>
+          <button
+            type="button"
+            className="chip chip-quiet"
+            onClick={() => {
+              onClear();
+              setListingAll(true);
+              setOpen(true);
+            }}
+          >
             Show all
           </button>
         )}
@@ -84,6 +107,7 @@ export function AreaSearch({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
                     onChoose(item);
+                    setListingAll(false);
                     setOpen(false);
                   }}
                 >

@@ -23,7 +23,7 @@ const PITCH_SLIDES = [
   },
   {
     title: "Try it",
-    body: "Open Explorer. Search Morgan County ARH → View financials → What changed? → a chart → Scenarios → Ask “What changed?” Then search Paul B. Hall to see pending data without a fake score.",
+    body: "Open Explorer. Search Morgan County ARH → View financials → Overview chart → What changed? → Scenarios → Ask “What changed?” Then search Paul B. Hall to see pending data without a fake score.",
   },
 ] as const;
 
@@ -77,7 +77,7 @@ export function AboutPulseLine({
             still needs investigation.
           </li>
           <li>
-            <strong>Product.</strong> Search → What changed? → chart → illustrative scenario → sourced Ask.
+            <strong>Product.</strong> Search → chart → What changed? → illustrative scenario → sourced Ask.
           </li>
           <li>
             <strong>Not this.</strong> Not a validated prediction model, valuation engine, or acquisition recommendation.
@@ -108,8 +108,8 @@ export function AboutPulseLine({
         <h2>3-minute walkthrough</h2>
         <ol>
           <li>Search <strong>Morgan County ARH</strong> and choose View financials.</li>
-          <li>Read <strong>What changed?</strong> Both fiscal periods are shown.</li>
-          <li>Use a chart link, then open <strong>Scenarios</strong>. Raise revenue, read the signed bars, reset. It is not a forecast.</li>
+          <li>On <strong>Overview</strong>, read a chart. Then scroll to <strong>What changed?</strong> Both fiscal periods are shown.</li>
+          <li>Open <strong>Scenarios</strong>. Raise revenue, read the signed bars, reset. It is not a forecast.</li>
           <li>Open <strong>Ask</strong> and type “What changed?” Generative AI does not need to run.</li>
           <li>Search <strong>Paul B. Hall</strong>. Financial data pending means we did not invent a score.</li>
         </ol>

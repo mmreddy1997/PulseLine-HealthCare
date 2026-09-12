@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { adaptEvidencePack } from "../lib/adapt-evidence.ts";
 import {
+  allHospitalSuggestions,
   allKentuckyArea,
   areaFromSuggestion,
   buildExplorerCatalog,
@@ -200,6 +201,13 @@ describe("map and list matching", () => {
     assert.match(path, /^M/);
     const pendingMarkers = catalog.filter((item) => item.latitude === null);
     assert.equal(pendingMarkers.length, catalog.length);
+  });
+
+  it("lists every hospital when search is asked to show all", () => {
+    const listed = allHospitalSuggestions(catalog);
+    assert.equal(listed.length, catalog.length);
+    assert.ok(listed.every((item) => item.kind === "hospital"));
+    assert.equal(buildSearchSuggestions(catalog, [], "").length, 0);
   });
 
   it("suggests hospitals, cities, counties, and facility ZIPs without inventing ZCTA outlines", () => {

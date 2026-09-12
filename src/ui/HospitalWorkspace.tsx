@@ -85,10 +85,9 @@ function FinancialsPane({ view, reports }: { view: HospitalView | null; reports:
   }
   return (
     <section className="content-panel">
-      <h3>Financial statements</h3>
       <FinancialStatements reports={reports} />
-      <details>
-        <summary>Metric definitions and sources</summary>
+      <details className="metric-source-panel">
+        <summary>Score metric formulas and sources</summary>
         <ul className="signal-list">
           {view.financial.factors.map((factor) => (
             <li key={factor.id}>
@@ -375,23 +374,6 @@ export function HospitalWorkspace({
         </div>
       </div>
       {view ? <PeriodMeta view={view} /> : null}
-      {pane === "overview" ? (
-        <WhatChangedPanel
-          view={view}
-          reports={reports}
-          pending={pending}
-          research={research}
-          events={events}
-          observations={observations}
-          hospitalName={title}
-          onOpenChart={(id) => {
-            setFinancialView(id);
-            window.requestAnimationFrame(() => {
-              document.getElementById("financial-chart-region")?.focus();
-            });
-          }}
-        />
-      ) : null}
 
       <div className="workspace-tabs" role="tablist" aria-label="Hospital sections">
         {(Object.keys(PANE_LABELS) as WorkspacePane[]).map((item) => (
@@ -461,6 +443,24 @@ export function HospitalWorkspace({
           ) : null}
         </div>
       )}
+
+      {pane === "overview" ? (
+        <WhatChangedPanel
+          view={view}
+          reports={reports}
+          pending={pending}
+          research={research}
+          events={events}
+          observations={observations}
+          hospitalName={title}
+          onOpenChart={(id) => {
+            setFinancialView(id);
+            window.requestAnimationFrame(() => {
+              document.getElementById("financial-chart-region")?.focus();
+            });
+          }}
+        />
+      ) : null}
     </section>
   );
 }
