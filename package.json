@@ -12,11 +12,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "validate": "tsx src/cli/validate.ts",
-    "test": "tsx --test tests/validate.test.ts tests/score.test.ts tests/extract-validate.test.ts tests/focus.test.ts tests/adapt-research.test.ts tests/adapt-evidence.test.ts tests/investigate.test.ts tests/format.test.ts",
+    "test": "tsx --test tests/validate.test.ts tests/score.test.ts tests/extract-validate.test.ts tests/focus.test.ts tests/adapt-research.test.ts tests/adapt-evidence.test.ts tests/investigate.test.ts tests/format.test.ts tests/ask.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.85",
+    "jspdf": "^4.2.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

@@ -1,40 +1,39 @@
 # PulseLine
 
-Early Warning Intelligence for Rural Healthcare
+Experimental evidence dashboard for rural Kentucky hospitals.
 
-A **historical financial prototype** for three Kentucky CAHs, plus a separate sourced structural-event timeline. It uses researched CMS cost-report rows. It does not detect emerging workforce instability and is not a validated early-warning or bankruptcy model. Workforce analysis, five-domain profiles, pre-event panels, and matched controls remain pending.
+PulseLine helps county and state healthcare leaders, rural-health researchers, and community planners:
 
-## Problem
+- Understand historical hospital financial indicators
+- Compare available reporting years
+- Examine documented structural events
+- Ask questions about a hospital’s available evidence
+- Download only the answers they choose
 
-Rural and safety-net hospitals can lose service lines, convert, or close after financial strain has already been visible in public filings. County and state healthcare leaders often see those signals too late, and in fragments.
+It does not predict bankruptcy, closure, acquisition, or service reduction.
 
-## Product hypothesis
+> Because we believe your ZIP code should not determine the quality of care you receive.
 
-If Kentucky leaders can see **transparent historical financial stress** next to **honest data-quality limits** and a sourced event timeline, they can decide what to investigate. A second signal — longitudinal workforce instability from historical NPPES snapshots — is planned and is not implemented.
+## How to use PulseLine
 
-## Target users
-
-County and state healthcare leadership in Kentucky.
+1. Choose a hospital.
+2. Explore reports and explanations.
+3. Ask about the available evidence.
+4. Download selected answers.
 
 ## Current architecture
 
 1. Financial research pack (`research/PulseLine_three_hospital_data.json`, evidence, dictionary, event log).
-2. Financial adapter (`lib/adapt-research.ts`) converts 12 hospital-year reports, preserving original CMS strings, report record IDs, file cohorts, fiscal dates, and nulls. Null hospital/report rows and unresolved source IDs fail closed.
+2. Financial adapter (`lib/adapt-research.ts`) converts 12 hospital-year reports, preserving original CMS strings, report record IDs, file cohorts, fiscal dates, and nulls.
 3. Extract validation (`lib/validate-extract.ts`) runs before normalize/score.
-4. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`).
+4. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`). Thresholds and weights were not changed in this pass.
 5. Evidence ledger (`research/PulseLine_expanded_evidence_v1.json`) through `lib/adapt-evidence.ts`.
-6. Dashboard (`src/ui`) shows the latest fiscal report per scored hospital, earlier reports, and a structural-event timeline that is not part of the score.
+6. Dashboard (`src/ui`) shows scored hospitals, research cases, and a hospital workspace with Overview, Reports, Events, and Ask.
+7. PulseLine Ask (`lib/ask`, `src/ui/ask`) answers hospital-scoped questions with structured retrieval. An optional on-device model may only explain approved results.
 
-## Research-backed workflow
+No hospital map, geocoding, or Cards/Map toggle is included.
 
-1. Read the three-hospital research pack and dictionary.
-2. Keep `hospital_id` (Kentucky license key) as facility identity.
-3. Keep each CMS `report_record_id` and actual `fiscal_start` / `fiscal_end`.
-4. Parse original CMS numeric strings explicitly; reject malformed values.
-5. Score only definitionally supported ratios from that fiscal report.
-6. Do not mix Kentucky calendar-year utilization into CMS fiscal-year figures.
-7. Load the expanded evidence ledger only through the typed adapter.
-8. Show effective date, announcement date, scope, source link, and verification limits. A null publication date is not historical eligibility.
+## Hospitals
 
 Scored hospitals:
 
@@ -42,7 +41,7 @@ Scored hospitals:
 - Morgan County ARH Hospital (`KY-LIC-600058`, CCN `181307`)
 - Kentucky River Medical Center (`KY-LIC-100620`, historical CCN `180139`, current CCN `181334`)
 
-Research cohort, financial coverage pending (no invented CCN, license, financials, or score):
+Research cases, financial coverage pending (no invented CCN, license, financials, score, or reassuring status):
 
 - Highlands Regional Medical Center / Highlands ARH (`case_highlands`)
 - Paul B. Hall Regional Medical Center / Paintsville ARH (`case_paul_b_hall`)
@@ -60,7 +59,7 @@ Configurable in `lib/scoring-config.ts`.
 | Cash / liquidity | Cash on Hand and in Banks / Less Total Operating Expense | Negative cash is preserved and excluded from the ratio |
 | Patient volume | Total Days / Total Bed Days Available | CMS fiscal report only |
 
-If no factor can be scored, score is null and status is **Insufficient data**.
+If no factor can be scored, score is null and status is **Insufficient data**. Status uses text, a distinct symbol, and color.
 
 ## Structural events
 
@@ -71,7 +70,7 @@ Shown separately from the financial score.
 - Kentucky River September 2021 property sale is a property transaction, not a verified provider CHOW.
 - Quorum April 2020 bankruptcy and July 2020 emergence are parent events, not a verified Kentucky River hospital bankruptcy.
 
-Hospital pressure (CMS fiscal reports / licensed beds) and community context (Floyd County CHNA figures) are separate. No new weighted convergence score, forecast, or NPPES departure inference was added.
+Hospital pressure and community context are separate. No new weighted convergence score, forecast, or NPPES departure inference was added.
 
 ## Limitations
 
@@ -82,6 +81,41 @@ Hospital pressure (CMS fiscal reports / licensed beds) and community context (Fl
 - A null publication date excludes historical eligibility.
 - Outcomes stay unknown unless a sourced event says otherwise.
 - Workforce / NPPES, five-domain research, pre-event panels, and matched controls are pending.
+
+## PulseLine Ask
+
+Ask is a hospital-specific helper. Suggested questions, free-text lookup, follow-ups, copy, and answer-only PDF export work without downloading a model. Facts and calculations are produced by application code. The language model never invents or recalculates financial values.
+
+If a device cannot run the optional model, Ask continues as **data lookup**. That label is shown on each answer. Conversations are scoped to the selected hospital, can be cleared, and are not persisted after the tab is closed.
+
+Answer PDFs are generated in the browser and include only completed, selected answers: hospital name, questions, statements, periods, sources/report IDs, limitations, export date, and an experimental-use note.
+
+## On-device model
+
+Default helper: **Llama 3.2 1B Instruct**, 4-bit MLC build `Llama-3.2-1B-Instruct-q4f16_1-MLC`.
+
+| Topic | Detail |
+| --- | --- |
+| Runtime | [WebLLM](https://github.com/mlc-ai/web-llm) (`@mlc-ai/web-llm`), Apache-2.0 |
+| Why this model | Small enough for a first load, official MLC browser build, worker support |
+| Download | Official MLC size is about 700 MB. In local preview, WebLLM reported 412 MB fetched at 62% after 7 seconds (~665 MB implied). The download was stopped before completion. |
+| Cancel | **Cancel download** terminates the WebLLM worker. Ask stays on data lookup. |
+| Hardware | WebGPU (Chrome / Edge 113+). No mobile-performance claim until physically tested |
+| Fallback | If WebGPU is missing, load fails, or the user cancels, Ask stays on data lookup |
+| License | Llama 3.2 Community License for the weights; do not redistribute the weights inside this repo |
+| Privacy | Inference stays on the visitor device. Questions are not sent to a remote model API |
+
+GitHub Pages still hosts only the static app. Model files are fetched by the browser when the visitor chooses **Load on-device helper**. Hugging Face must remain reachable for that optional path.
+
+## Browser support
+
+- Landing, hospital workspace, suggested questions, data-lookup answers, and PDF export: current Chrome, Edge, Firefox, and Safari with JavaScript enabled.
+- Optional on-device helper: WebGPU required. Firefox and Safari may be unavailable; the data-lookup path remains.
+- Viewport checks in development are not a substitute for a physical phone.
+
+## GitHub Pages
+
+Build with `PAGES_BASE=/PulseLine/` and publish the `dist/` folder. No server, database, account, or secret API key is required. The optional model download is a visitor-side request to Hugging Face, not part of the Pages artifact.
 
 ## How to run locally
 
