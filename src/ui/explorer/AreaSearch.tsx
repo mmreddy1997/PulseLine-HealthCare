@@ -32,42 +32,44 @@ export function AreaSearch({
 
   return (
     <div className="area-search">
-      <label className="search-field search-field-lg">
-        <span>Search Kentucky</span>
-        <input
-          type="search"
-          role="combobox"
-          aria-expanded={open && groups.length > 0}
-          aria-controls={listId}
-          aria-autocomplete="list"
-          value={query}
-          placeholder="Hospital, city, county, or ZIP"
-          onChange={(event) => {
-            onQueryChange(event.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              setOpen(false);
-            }
-            if (event.key === "Enter" && suggestions[0]) {
-              event.preventDefault();
-              onChoose(suggestions[0]);
-              setOpen(false);
-            }
-          }}
-        />
-      </label>
-      {query ? (
-        <button type="button" className="chip chip-quiet" onClick={onClear}>
-          Clear search
-        </button>
-      ) : (
-        <button type="button" className="chip chip-quiet" onClick={onClear}>
-          Show all
-        </button>
-      )}
+      <div className="area-search-controls">
+        <label className="search-field search-field-lg">
+          <span>Search Kentucky</span>
+          <input
+            type="search"
+            role="combobox"
+            aria-expanded={open && groups.length > 0}
+            aria-controls={listId}
+            aria-autocomplete="list"
+            value={query}
+            placeholder="Hospital, city, county, or ZIP"
+            onChange={(event) => {
+              onQueryChange(event.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setOpen(false);
+              }
+              if (event.key === "Enter" && suggestions[0]) {
+                event.preventDefault();
+                onChoose(suggestions[0]);
+                setOpen(false);
+              }
+            }}
+          />
+        </label>
+        {query ? (
+          <button type="button" className="chip chip-quiet" onClick={onClear}>
+            Clear search
+          </button>
+        ) : (
+          <button type="button" className="chip chip-quiet" onClick={onClear}>
+            Show all
+          </button>
+        )}
+      </div>
       {open && groups.length > 0 ? (
         <div id={listId} className="search-suggestions" role="listbox" aria-label="Search suggestions">
           {groups.map((group) => (

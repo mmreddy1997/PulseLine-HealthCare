@@ -290,7 +290,7 @@ export function HospitalWorkspace({
     <section id="hospital-financials" className="workspace is-inline" aria-labelledby="workspace-title">
       <div ref={setBarSentinel} className="hospital-bar-sentinel" aria-hidden="true" />
       <div className={`hospital-bar is-sticky${compactBar ? " is-compact" : ""}`}>
-        <div>
+        <div className="hospital-bar-identity">
           <h2 id="workspace-title" ref={headingRef} tabIndex={-1}>
             {title}
           </h2>
@@ -326,13 +326,13 @@ export function HospitalWorkspace({
           {pending ? (
             <p className="status-pill status-pending">
               <StatusGlyph status="pending" />
-              {compactBar ? "Pending" : "Financial data pending"}
+              Financial data pending
             </p>
           ) : view ? (
             <p className={`status-pill ${statusClass(view.financial.status)}`}>
               <StatusGlyph status={view.financial.status} />
               {compactBar
-                ? `${view.financial.score ?? "none"} · ${view.financial.status}`
+                ? `Experimental ${view.financial.score ?? "none"} · ${view.financial.status}`
                 : `Experimental score ${view.financial.score ?? "none"}`}
             </p>
           ) : null}

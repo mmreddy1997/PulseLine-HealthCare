@@ -77,6 +77,9 @@ export function HospitalExplorer({
           {" · "}
           <a href="#about-pitch">Pitch</a>
         </p>
+      </div>
+
+      <div className="explorer-split">
         <AreaSearch
           hospitals={hospitals}
           counties={KY_COUNTIES}
@@ -91,6 +94,22 @@ export function HospitalExplorer({
             chooseArea(allKentuckyArea(), "kentucky");
           }}
         />
+        <KentuckyMap
+          hospitals={hospitals}
+          area={area}
+          mapFocus={mapFocus}
+          selectedHospitalId={selectedId}
+          onSelectCounty={(fips, name) => {
+            setQuery(`${name} County`);
+            chooseArea(areaFromCounty(fips, name));
+          }}
+          onSelectHospital={viewHospital}
+          onShowAll={() => {
+            setQuery("");
+            chooseArea(allKentuckyArea(), "kentucky");
+          }}
+          onBackToArea={() => setMapFocus(area.kind === "all" ? "kentucky" : "area")}
+        />
       </div>
 
       <p className="result-count">
@@ -100,23 +119,6 @@ export function HospitalExplorer({
       <p className="tiny">
         {DATASET_SCOPE_NOTE} {FILTER_LOCATION_HELP}
       </p>
-
-      <KentuckyMap
-        hospitals={hospitals}
-        area={area}
-        mapFocus={mapFocus}
-        selectedHospitalId={selectedId}
-        onSelectCounty={(fips, name) => {
-          setQuery(`${name} County`);
-          chooseArea(areaFromCounty(fips, name));
-        }}
-        onSelectHospital={viewHospital}
-        onShowAll={() => {
-          setQuery("");
-          chooseArea(allKentuckyArea(), "kentucky");
-        }}
-        onBackToArea={() => setMapFocus(area.kind === "all" ? "kentucky" : "area")}
-      />
 
       {result.matchCount === 0 ? (
         <div className="empty-copy">

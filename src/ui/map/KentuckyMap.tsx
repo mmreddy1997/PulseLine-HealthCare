@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import kyCounties from "../../../data/geo/ky-counties.json";
 import type { AreaSelection } from "../../../lib/explorer/search.ts";
 import { matchingCountyFips, pluralHospitals, type ExplorerHospital } from "../../../lib/explorer/index.ts";
@@ -75,22 +75,11 @@ export function KentuckyMap({
   const viewBox = useMemo(() => viewBoxString(scaleViewBox(fitBox, zoom)), [fitBox, zoom]);
   const canZoomIn = zoom < MAP_ZOOM_MAX;
   const canZoomOut = zoom > MAP_ZOOM_MIN;
-  const svgRef = useRef<SVGSVGElement>(null);
 
   function adjustZoom(delta: number) {
     setZoom((current) => clampMapZoom(current + delta));
   }
 
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    function onWheel(event: WheelEvent) {
-      event.preventDefault();
-      adjustZoom(event.deltaY < 0 ? MAP_ZOOM_STEP : -MAP_ZOOM_STEP);
-    }
-    svg.addEventListener("wheel", onWheel, { passive: false });
-    return () => svg.removeEventListener("wheel", onWheel);
-  }, []);
   const markers = hospitals.filter((hospital) => hospital.latitude != null && hospital.longitude != null);
 
   return (
@@ -112,7 +101,6 @@ export function KentuckyMap({
         </div>
       </div>
       <svg
-        ref={svgRef}
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
         role="img"
@@ -208,7 +196,7 @@ export function KentuckyMap({
         {markers.length === 0
           ? " Hospital street markers are omitted because sourced latitude and longitude are not verified."
           : " Markers appear only for hospitals with sourced coordinates."}{" "}
-        After a county is selected, use Zoom in, Zoom out, the scroll wheel, or + and −.
+        After a county is selected, use Zoom in, Zoom out, or + and −.
       </figcaption>
     </figure>
   );
