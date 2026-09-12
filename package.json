@@ -2,7 +2,7 @@
   "name": "pulse-line",
   "version": "0.1.0",
   "private": true,
-  "description": "Early Warning Intelligence for Rural Healthcare",
+  "description": "Experimental hospital screening and evidence review for early-stage healthcare acquisition diligence",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -12,7 +12,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "validate": "tsx src/cli/validate.ts",
-    "test": "tsx --test tests/validate.test.ts tests/score.test.ts tests/extract-validate.test.ts tests/focus.test.ts tests/adapt-research.test.ts tests/adapt-evidence.test.ts tests/investigate.test.ts tests/format.test.ts tests/ask.test.ts",
+    "test": "tsx --test tests/validate.test.ts tests/score.test.ts tests/extract-validate.test.ts tests/focus.test.ts tests/adapt-research.test.ts tests/adapt-evidence.test.ts tests/investigate.test.ts tests/format.test.ts tests/ask.test.ts tests/explorer.test.ts tests/charts.test.ts tests/whatif.test.ts tests/rubric.test.ts tests/diligence.test.ts tests/finance.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },

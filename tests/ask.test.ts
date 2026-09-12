@@ -218,6 +218,26 @@ describe("PulseLine Ask retrieval", () => {
     assert.equal(injection.status, "declined");
   });
 
+  it("explains a financial measure from the shared definition catalog", () => {
+    const context = scored("Breckinridge");
+    const answer = answerQuestion(context, "Explain this financial measure.");
+    assert.equal(answer.intent, "explain_measure");
+    assert.equal(answer.status, "complete");
+    assert.match(answer.statement, /Net patient revenue/i);
+    assert.match(answer.statement, /Not total hospital revenue/i);
+  });
+
+  it("declines valuation and acquisition questions and offers a supported alternative", () => {
+    const context = scored("Morgan");
+    const worth = answerQuestion(context, "What is it worth and should we acquire it?");
+    assert.equal(worth.intent, "unsupported_valuation");
+    assert.equal(worth.status, "declined");
+    assert.match(worth.statement, /does not establish/i);
+    assert.ok(worth.suggestedFollowUps.length > 0);
+    const sale = answerQuestion(context, "Is it for sale?");
+    assert.equal(sale.intent, "unsupported_valuation");
+  });
+
   it("falls back to data lookup when the model fails or invents money", () => {
     const context = scored("Breckinridge");
     const answer = answerKnownIntent(
@@ -255,6 +275,7 @@ describe("PulseLine Ask retrieval", () => {
       assert.equal(exported.document.answers[0]?.question, complete.question);
       assert.equal(exported.document.hospitalName, context.hospitalName);
       assert.equal(exported.document.exportedAt, "2026-09-12");
+      assert.match(exported.document.experimentalNote, /evidence notes/i);
       assert.ok(!JSON.stringify(exported.document).includes("hospital_year_reports"));
     }
   });
@@ -284,17 +305,13 @@ describe("PulseLine Ask retrieval", () => {
 
   it("offers coverage-aware suggested questions and not invented research financials", () => {
     const scoredChips = suggestedQuestions(scored("Kentucky River"));
-    assert.deepEqual(
-      scoredChips.map((chip) => chip.question),
-      [
-        "Why did this hospital receive this score?",
-        "What was net patient revenue for this fiscal period?",
-        "How did revenue change from the previous comparable report?",
-        "What information is missing or excluded?",
-        "What documented events relate to this hospital?",
-        "What community context is available?",
-      ],
-    );
+    assert.ok(scoredChips.some((chip) => chip.question === "Explain this financial measure."));
+    assert.ok(scoredChips.some((chip) => chip.question === "What contributes to the concern score?"));
+    assert.ok(scoredChips.some((chip) => chip.question === "What changed between these reports?"));
+    assert.ok(scoredChips.some((chip) => chip.question === "Which figures are missing or excluded?"));
+    assert.ok(scoredChips.some((chip) => chip.question === "What transactions or parent-company events are documented?"));
+    assert.ok(scoredChips.some((chip) => chip.question === "Is this event about the provider, parent, or property?"));
+    assert.ok(scoredChips.some((chip) => chip.question === "What identity questions remain unresolved?"));
     const researchChips = suggestedQuestions(research("Paul B. Hall"));
     assert.ok(!researchChips.some((chip) => chip.intent === "net_patient_revenue" || chip.intent === "why_score"));
     assert.ok(researchChips.some((chip) => chip.intent === "structural_events"));

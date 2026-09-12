@@ -144,6 +144,9 @@ export interface Hospital {
   state: string;
   zip: string | null;
   county: string | null;
+  countyFips: string | null;
+  ownershipCategory: string | null;
+  ruralClassification: string | null;
   address: string | null;
   fiscalYearStart: string | null;
   fiscalYearEnd: string;
@@ -151,6 +154,8 @@ export interface Hospital {
   fileCohort: number | null;
   sourceId: string | null;
   sourceUrl: string | null;
+  publicationDate?: string | null;
+  reportingScope?: string | null;
   periodDays: number | null;
   financials: HospitalFinancials;
   dataQuality: HospitalDataQuality;

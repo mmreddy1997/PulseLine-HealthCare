@@ -1,4 +1,6 @@
+import { MEASURES } from "../finance/index.ts";
 import { flaggedExplanations } from "../score-financial.ts";
+import { SCENARIO_LIMIT } from "../scenario/whatif.ts";
 import { fiscalLabel, moneyExact, moneyHeadline } from "../../src/ui/format.ts";
 import { interpretQuestion, totalClarificationOptions, yearClarification } from "./interpret.ts";
 import {
@@ -10,6 +12,7 @@ import {
   type AskIntent,
   type InterpretedQuestion,
   type PulseAnswer,
+  type ScenarioExport,
 } from "./types.ts";
 
 const METHOD_LIMIT =
@@ -97,6 +100,7 @@ function baseAnswer(
     suggestedFollowUps: patch.suggestedFollowUps ?? [],
     lockedFacts: patch.lockedFacts ?? [],
     headline: patch.headline ?? null,
+    scenario: patch.scenario ?? null,
   };
 }
 
@@ -160,7 +164,7 @@ function answerWhyScore(context: AskContext, question: string): PulseAnswer {
     sources: [cmsSource(view)],
     lockedFacts: score === null ? ["score=null"] : [`score=${score}`, `status=${view.financial.status}`],
     limitations: [
-      "The score is an experimental interpretation of available factors on this historical report. It is not a probability of closure or bankruptcy.",
+      "The score is an experimental interpretation of available factors on this historical report. It is not acquisition attractiveness, enterprise value, or a probability of closure or bankruptcy.",
       METHOD_LIMIT,
     ],
     suggestedFollowUps: ["What information is missing or excluded?"],
@@ -341,7 +345,10 @@ function answerEvents(context: AskContext, question: string): PulseAnswer {
     return baseAnswer(context, question, "structural_events", {
       status: "unavailable",
       statement: UNAVAILABLE_STATEMENT,
-      limitations: ["No verified structural events are attached to this hospital in the current evidence ledger.", METHOD_LIMIT],
+      limitations: [
+        "No sourced structural events are attached in the current PulseLine ledger. That is not a finding that no events exist.",
+        METHOD_LIMIT,
+      ],
     });
   }
   const groups = new Map<string, typeof context.events>();
@@ -371,6 +378,65 @@ function answerEvents(context: AskContext, question: string): PulseAnswer {
       "Event dates are not fiscal periods or CMS file cohorts.",
       METHOD_LIMIT,
     ],
+  });
+}
+
+function scenarioExportFrom(context: AskContext): ScenarioExport | null {
+  const scenario = context.scenario;
+  if (!scenario?.enabled) return null;
+  return {
+    baselinePeriod: scenario.baselinePeriod,
+    revenueChangePct: scenario.inputs.revenueChangePct,
+    expenseChangePct: scenario.inputs.expenseChangePct,
+    baselineRevenue: scenario.baselineRevenue,
+    baselineExpenses: scenario.baselineExpenses,
+    scenarioRevenue: scenario.scenarioRevenue,
+    scenarioExpenses: scenario.scenarioExpenses,
+    scenarioBalance: scenario.scenarioBalance,
+    baselineBalance: scenario.baselineBalance,
+    balanceChange: scenario.balanceChange,
+    revenueToEqualExpenses: scenario.revenueToEqualExpenses,
+    requiredRevenueChangePct: scenario.requiredRevenueChangePct,
+    formulas: scenario.formulas,
+    limitation: SCENARIO_LIMIT,
+  };
+}
+
+function answerScenario(context: AskContext, question: string): PulseAnswer {
+  if (context.kind !== "scored" || !context.selectedReport) {
+    return baseAnswer(context, question, "whatif_scenario", {
+      status: "unavailable",
+      statement: UNAVAILABLE_STATEMENT,
+      limitations: ["What-if is disabled while financial data is pending.", METHOD_LIMIT],
+    });
+  }
+  const scenario = context.scenario;
+  if (!scenario?.enabled || scenario.scenarioRevenue === null || scenario.scenarioExpenses === null || scenario.scenarioBalance === null) {
+    return baseAnswer(context, question, "whatif_scenario", {
+      status: "unavailable",
+      statement: UNAVAILABLE_STATEMENT,
+      limitations: [scenario?.disabledReason ?? "No supported scenario is available for this report.", METHOD_LIMIT],
+    });
+  }
+  const statement = `${context.hospitalName} scenario for ${scenario.baselinePeriod}: assumed net patient revenue ${scenario.inputs.revenueChangePct >= 0 ? "+" : ""}${scenario.inputs.revenueChangePct}% and patient-service expenses ${scenario.inputs.expenseChangePct >= 0 ? "+" : ""}${scenario.inputs.expenseChangePct}% produces scenario revenue ${moneyExact(scenario.scenarioRevenue)}, scenario expenses ${moneyExact(scenario.scenarioExpenses)}, and a simplified patient-service scenario balance of ${moneyExact(scenario.scenarioBalance)}.`;
+  return baseAnswer(context, question, "whatif_scenario", {
+    status: "complete",
+    kind: "scenario",
+    statement,
+    periodLabel: scenario.baselinePeriod,
+    periods: [periodFromView(context.selectedReport)],
+    sources: scenario.sources,
+    headline: moneyHeadline(scenario.scenarioBalance),
+    lockedFacts: [
+      `scenarioRevenue=${scenario.scenarioRevenue}`,
+      `scenarioExpenses=${scenario.scenarioExpenses}`,
+      `scenarioBalance=${scenario.scenarioBalance}`,
+      moneyExact(scenario.scenarioRevenue),
+      moneyExact(scenario.scenarioExpenses),
+      moneyExact(scenario.scenarioBalance),
+    ],
+    scenario: scenarioExportFrom(context),
+    limitations: [SCENARIO_LIMIT, METHOD_LIMIT],
   });
 }
 
@@ -432,6 +498,20 @@ export function answerQuestion(context: AskContext, rawQuestion: string, interpr
       suggestedFollowUps: suggestedFallback(context),
     });
   }
+  if (parsed.intent === "unsupported_valuation") {
+    return baseAnswer(context, question, "unsupported_valuation", {
+      status: "declined",
+      kind: "experimental_interpretation",
+      statement:
+        "The available evidence does not establish whether to acquire this hospital, what it is worth, or whether it is for sale. PulseLine does not invent legal conclusions, seller intent, or deal recommendations. A supported next question is the hospital’s historical financial pressures or documented events.",
+      limitations: [EXPERIMENTAL_NOTE],
+      suggestedFollowUps: suggestedFallback(context),
+    });
+  }
+  if (parsed.intent === "identity_questions") return answerIdentity(context, question);
+  if (parsed.intent === "event_scope") return answerEventScope(context, question);
+  if (parsed.intent === "verify_figure") return answerVerifyFigure(context, question);
+  if (parsed.intent === "explain_measure") return answerExplainMeasure(context, question);
   if (parsed.intent === "clarify_total") {
     return baseAnswer(context, question, "clarify_total", {
       status: "clarification",
@@ -485,14 +565,126 @@ export function answerQuestion(context: AskContext, rawQuestion: string, interpr
   if (parsed.intent === "missing_excluded") return answerMissing(context, question);
   if (parsed.intent === "structural_events") return answerEvents(context, question);
   if (parsed.intent === "community_context") return answerCommunity(context, question);
+  if (parsed.intent === "whatif_scenario") return answerScenario(context, question);
   return baseAnswer(context, question, parsed.intent, { status: "unavailable", statement: UNAVAILABLE_STATEMENT });
+}
+
+function answerIdentity(context: AskContext, question: string): PulseAnswer {
+  const view = context.selectedReport;
+  const parts: string[] = [];
+  if (context.kind !== "scored" || !view) {
+    parts.push(`${context.hospitalName} is a research case. Financial identity fields and a CCN were not invented.`);
+    if (context.research?.ccnAtEvent == null) parts.push("Event-time CCN is unknown.");
+    if (context.research?.providerChow === "unknown") parts.push("Provider CHOW is recorded as unknown.");
+  } else {
+    if (view.hospital.historicalCcn && view.hospital.currentCcn && view.hospital.historicalCcn !== view.hospital.currentCcn) {
+      parts.push(`Historical CCN ${view.hospital.historicalCcn} differs from current CCN ${view.hospital.currentCcn}.`);
+    }
+    if (view.hospital.dataQuality.addressMismatch) {
+      parts.push("A historical versus current street-address discrepancy is recorded and is not a workforce change.");
+    }
+    if (view.hospital.dataQuality.identityStatus === "unresolved") {
+      parts.push("Identity review is unresolved.");
+    }
+    if (parts.length === 0) {
+      parts.push("PulseLine has not flagged an identity discrepancy on the selected report. That is not a completed legal identity audit.");
+    }
+  }
+  return baseAnswer(context, question, "identity_questions", {
+    status: "complete",
+    kind: "reported",
+    statement: parts.join(" "),
+    periodLabel: view ? fiscalLabel(view.hospital.fiscalYearStart, view.hospital.fiscalYearEnd) : null,
+    periods: view ? [periodFromView(view)] : [],
+    sources: view ? [cmsSource(view)] : [],
+    limitations: [METHOD_LIMIT],
+  });
+}
+
+function answerEventScope(context: AskContext, question: string): PulseAnswer {
+  if (context.events.length === 0) {
+    return baseAnswer(context, question, "event_scope", {
+      status: "unavailable",
+      statement: UNAVAILABLE_STATEMENT,
+      limitations: [
+        "No sourced structural events are attached in the current PulseLine ledger. That is not a finding that no events exist.",
+        METHOD_LIMIT,
+      ],
+    });
+  }
+  const lines = context.events.map((event) => {
+    if (event.scope === "property") return `${event.eventSubtype.replaceAll("_", " ")} is a property-scope record, not a verified provider CHOW.`;
+    if (event.eventStatus === "verified_parent_event") {
+      return `${event.eventSubtype.replaceAll("_", " ")} is a parent-scope record, not a verified facility bankruptcy.`;
+    }
+    return `${event.eventSubtype.replaceAll("_", " ")} is recorded at ${event.scope.replaceAll("_", " ")} scope.`;
+  });
+  return baseAnswer(context, question, "event_scope", {
+    status: "complete",
+    kind: "reported",
+    statement: `Event scope for ${context.hospitalName}: ${lines.join(" ")}`,
+    sources: eventSources(context),
+    limitations: [...publicationLimits(context), METHOD_LIMIT],
+  });
+}
+
+function answerVerifyFigure(context: AskContext, question: string): PulseAnswer {
+  if (context.kind !== "scored" || !context.selectedReport) {
+    return baseAnswer(context, question, "verify_figure", {
+      status: "complete",
+      kind: "reported",
+      statement: `${context.hospitalName} has financial data pending. Verify source documents before treating any later figure as available in PulseLine.`,
+      limitations: [METHOD_LIMIT],
+    });
+  }
+  const view = context.selectedReport;
+  const period = fiscalLabel(view.hospital.fiscalYearStart, view.hospital.fiscalYearEnd);
+  const statement = `Before relying on a ${context.hospitalName} figure for ${period}, confirm the reporting-entity versus parent consolidation scope, the fiscal dates rather than the CMS file cohort, missing or excluded factors, and that a scenario result is not reported data.`;
+  return baseAnswer(context, question, "verify_figure", {
+    status: "complete",
+    kind: "experimental_interpretation",
+    statement,
+    periodLabel: period,
+    periods: [periodFromView(view)],
+    sources: [cmsSource(view)],
+    limitations: [METHOD_LIMIT],
+  });
+}
+
+function answerExplainMeasure(context: AskContext, question: string): PulseAnswer {
+  const lower = question.toLowerCase();
+  const measure = lower.includes("expense")
+    ? MEASURES.patient_service_expenses
+    : lower.includes("cash")
+      ? MEASURES.cash
+      : lower.includes("current ratio")
+        ? MEASURES.current_ratio
+        : lower.includes("margin") || lower.includes("result")
+          ? MEASURES.patient_service_result_ratio
+          : MEASURES.net_patient_revenue;
+  const view = context.selectedReport;
+  const excluded = view?.financial.factors.find((factor) =>
+    lower.includes("excluded") && (factor.availability === "invalid" || factor.availability === "unsupported"),
+  );
+  const statement = excluded
+    ? `${measure.label} for ${context.hospitalName}: ${measure.definition} ${measure.not} ${excluded.metric} was excluded because ${excluded.exclusion ?? "the published value is not interpretable."}`
+    : `${measure.label} for ${context.hospitalName}: ${measure.definition} ${measure.not}`;
+  return baseAnswer(context, question, "explain_measure", {
+    status: "complete",
+    kind: "experimental_interpretation",
+    statement,
+    periodLabel: view ? fiscalLabel(view.hospital.fiscalYearStart, view.hospital.fiscalYearEnd) : null,
+    periods: view ? [periodFromView(view)] : [],
+    sources: view ? [cmsSource(view)] : [],
+    limitations: [METHOD_LIMIT],
+  });
 }
 
 function suggestedFallback(context: AskContext): string[] {
   if (context.kind === "research") {
-    return ["What documented structural events relate to this hospital?", "What community context is available?"];
+    return ["What transactions or parent-company events are documented?", "What identity questions remain unresolved?"];
   }
-  return ["Why did this hospital receive this score?", "What was net patient revenue for this fiscal period?"];
+  return ["What financial pressures are visible in the available reports?", "Which figures are missing or excluded?"];
 }
 
 export function applyModelExplanation(answer: PulseAnswer, explanation: string | null): PulseAnswer {

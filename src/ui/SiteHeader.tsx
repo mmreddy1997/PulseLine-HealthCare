@@ -55,7 +55,7 @@ export function SiteHeader({
       ) : (
         <nav className="site-nav" aria-label="Site">
           <a href="#hospitals">Hospitals</a>
-          <a href="#methodology">Methodology</a>
+          <a href="#methodology">How it works</a>
           <a href="#about">About</a>
         </nav>
       )}
