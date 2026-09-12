@@ -61,12 +61,18 @@ export function formatAnswerText(answer: PulseAnswer): string {
       return `${source.label}${report}${url}`;
     })
     .join("\n");
+  const periods = answer.periods
+    .map((period) => `${period.start ? `${period.start} to ${period.end}` : `Ending ${period.end}`}${period.fileCohort != null ? ` (CMS file cohort ${period.fileCohort})` : ""}`)
+    .join("\n");
+  const calculations = answer.lockedFacts.length ? `Calculations:\n${answer.lockedFacts.join("\n")}` : null;
   return [
     `Hospital: ${answer.hospitalName}`,
     answer.periodLabel ? `Period: ${answer.periodLabel}` : null,
+    periods ? `Reporting periods:\n${periods}` : null,
     `Question: ${answer.question}`,
     `Answer: ${answer.statement}`,
     `Kind: ${answer.kind.replaceAll("_", " ")}`,
+    calculations,
     answer.scenario
       ? [
           "Scenario assumptions:",

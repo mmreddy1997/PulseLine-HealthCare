@@ -147,9 +147,16 @@ export function periodSetComparability(reports: HospitalView[]): ComparabilityRe
 }
 
 export function safePercentChange(current: number | null, previous: number | null): number | null {
-  if (current === null || previous === null || previous === 0) return null;
+  if (current === null || previous === null || previous <= 0) return null;
   if (!Number.isFinite(current) || !Number.isFinite(previous)) return null;
-  return ((current - previous) / Math.abs(previous)) * 100;
+  return ((current - previous) / previous) * 100;
+}
+
+export function percentChangeNote(previousValue: number | null): string | null {
+  if (previousValue === null) return "PulseLine does not calculate percentage growth when the earlier value is missing. Missing is not zero.";
+  if (previousValue === 0) return "PulseLine does not calculate percentage growth from a zero baseline.";
+  if (previousValue < 0) return "PulseLine does not calculate percentage growth from a negative baseline.";
+  return null;
 }
 
 export function comparableChange(
@@ -168,7 +175,7 @@ export function comparableChange(
     return {
       percent: null,
       comparable: comparability.comparable,
-      note: "PulseLine does not calculate a change when a comparable earlier value is missing or zero.",
+      note: percentChangeNote(previousValue) ?? "PulseLine does not calculate a change when a comparable earlier value is missing or not a valid positive baseline.",
     };
   }
   return { percent, comparable: true, note: comparability.note };

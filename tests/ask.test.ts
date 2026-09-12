@@ -10,6 +10,7 @@ import {
   applyModelExplanation,
   buildExportDocument,
   canExportAnswer,
+  formatAnswerText,
   interpretQuestion,
   researchAskContext,
   scoredAskContext,
@@ -18,6 +19,7 @@ import {
   type AskContext,
   type PulseAnswer,
 } from "../lib/ask/index.ts";
+import { formatWhatChangedAnswer, whatChangedBrief } from "../lib/finance/index.ts";
 import { loadResearchDashboard } from "../lib/pipeline.ts";
 import {
   AskModelLoadCancelled,
@@ -124,6 +126,45 @@ describe("PulseLine Ask retrieval", () => {
     assert.ok(fiscal.periodLabel?.includes("2023-08-31"));
     assert.ok(cohort.periodLabel?.includes("2024-08-31"));
     assert.notEqual(fiscal.statement, cohort.statement);
+  });
+
+  it("uses the same structured What changed results as the visual brief", () => {
+    const context = scored("Morgan");
+    assert.ok(context.selectedReport);
+    const brief = whatChangedBrief({
+      view: context.selectedReport,
+      reports: context.reports,
+      hospitalName: context.hospitalName,
+    });
+    const formatted = formatWhatChangedAnswer(brief);
+    const answer = answerKnownIntent(context, "What changed between these reports?", "revenue_change");
+    assert.equal(answer.status, "complete");
+    assert.equal(answer.statement, formatted.statement);
+    assert.ok(answer.periods.length === 2);
+    assert.ok(answer.sources.length > 0);
+    assert.ok(answer.limitations.some((line) => /publication date|consolidation|two-report|compar/i.test(line)));
+    const exported = formatAnswerText(answer);
+    assert.match(exported, /Hospital:/);
+    assert.match(exported, /Reporting periods:/);
+    assert.match(exported, /Sources:/);
+    assert.match(exported, /Limitations:/);
+    assert.match(exported, /Calculations:/);
+    const document = buildExportDocument(context.hospitalName, [answer], new Date("2026-09-12"));
+    assert.equal(document.ok, true);
+    if (document.ok) {
+      assert.ok(document.document.answers[0]?.limitations.some((line) => /publication date|consolidation|compar/i.test(line)));
+      assert.ok(!JSON.stringify(document.document).includes("hospital_year_reports"));
+    }
+  });
+
+  it("does not invent a comparison for research cases with financial data pending", () => {
+    const context = research("Paul B. Hall");
+    const answer = answerKnownIntent(context, "What changed between these reports?", "revenue_change");
+    assert.equal(answer.status, "unavailable");
+    assert.match(answer.statement, /Financial data pending/);
+    assert.ok(!answer.statement.includes("increased faster"));
+    const chips = suggestedQuestions(context);
+    assert.ok(chips.some((chip) => chip.question === "What changed between these reports?"));
   });
 
   it("compares revenue using both underlying values and periods", () => {

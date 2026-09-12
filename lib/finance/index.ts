@@ -25,10 +25,24 @@ export {
   compareTwoReports,
   orderedReports,
   periodSetComparability,
+  percentChangeNote,
   periodsOverlap,
   safePercentChange,
   type ComparabilityResult,
 } from "./comparability.ts";
 export { periodAgeDays, periodAgeLabel, periodMeta, publicationStatus, type PeriodMeta } from "./period.ts";
 export { STATEMENT_GROUPS, financialStatement, type FinancialStatement, type StatementRow } from "./statements.ts";
-export { guidedBrief, type BriefLine, type GuidedBrief } from "./brief.ts";
+export {
+  EDITORIAL_CARD_ORDER,
+  EDITORIAL_CARD_RULE,
+  formatWhatChangedAnswer,
+  guidedBrief,
+  priorReport,
+  relativeChangeForUnit,
+  whatChangedBrief,
+  type BriefLine,
+  type ChangeCard,
+  type GuidedBrief,
+  type RelativeChangeKind,
+  type WhatChangedBrief,
+} from "./brief.ts";

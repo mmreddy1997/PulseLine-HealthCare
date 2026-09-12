@@ -10,8 +10,8 @@ import { ContextObservations, EventTimeline } from "./EventTimeline.tsx";
 import { FinancialCards } from "./finance/FinancialCards.tsx";
 import { FinancialStatements } from "./finance/FinancialStatements.tsx";
 import { FinancialView } from "./finance/FinancialView.tsx";
-import { GuidedBrief } from "./finance/GuidedBrief.tsx";
 import { PeriodMeta } from "./finance/PeriodMeta.tsx";
+import { WhatChangedPanel } from "./finance/WhatChanged.tsx";
 import { factorDisplay, StatusGlyph } from "./hospital-display.tsx";
 import { fiscalLabel, shortFiscalRange, statusClass } from "./format.ts";
 import { WhatIfPanel } from "./scenario/WhatIfPanel.tsx";
@@ -40,41 +40,22 @@ function useWideSplit() {
 
 function OverviewPane({
   view,
-  research,
   reports,
-  events,
-  pending,
   financialView,
   onFinancialView,
   onOpenAbout,
 }: {
   view: HospitalView | null;
-  research: EvidenceHospital | null;
   reports: HospitalView[];
-  events: StructuralEvent[];
-  pending: boolean;
   financialView: FinancialViewId;
   onFinancialView: (id: FinancialViewId) => void;
   onOpenAbout?: () => void;
 }) {
-  const gaps = diligenceGaps({ view, research, events, observations: [], pending });
   if (!view) {
-    return (
-      <section className="content-panel">
-        <h3>Overview</h3>
-        <p className="status-pill status-pending">Financial data pending</p>
-        <p>No CCN, financials, score, charts, or scenario baseline were invented for {research?.name ?? "this case"}.</p>
-        <h4>Sourced events remain available</h4>
-        {events.length > 0 ? <EventTimeline events={events} /> : <p className="tiny">{EMPTY_EVENT_LEDGER}</p>}
-        <h4>What requires verification</h4>
-        <GapList gaps={gaps} />
-      </section>
-    );
+    return null;
   }
   return (
     <section className="content-panel">
-      <GuidedBrief view={view} reports={reports} compact />
-      <FinancialCards view={view} />
       <FinancialView
         key={view.hospital.hospitalId}
         view={view}
@@ -82,6 +63,7 @@ function OverviewPane({
         selectedView={financialView}
         onViewChange={onFinancialView}
       />
+      <FinancialCards view={view} />
       <aside className="score-secondary">
         <p className="label">Experimental concern score</p>
         <p className="tiny">Secondary to the financial records. Not acquisition attractiveness or a forecast.</p>
@@ -352,6 +334,23 @@ export function HospitalWorkspace({
         </div>
       </div>
       {view ? <PeriodMeta view={view} /> : null}
+      {pane === "overview" ? (
+        <WhatChangedPanel
+          view={view}
+          reports={reports}
+          pending={pending}
+          research={research}
+          events={events}
+          observations={observations}
+          hospitalName={title}
+          onOpenChart={(id) => {
+            setFinancialView(id);
+            window.requestAnimationFrame(() => {
+              document.getElementById("financial-chart-region")?.focus();
+            });
+          }}
+        />
+      ) : null}
 
       <div className="workspace-tabs" role="tablist" aria-label="Hospital sections">
         {(Object.keys(PANE_LABELS) as WorkspacePane[]).map((item) => (
@@ -386,10 +385,7 @@ export function HospitalWorkspace({
           {pane === "overview" ? (
             <OverviewPane
               view={view}
-              research={research}
               reports={reports}
-              events={events}
-              pending={pending}
               financialView={financialView}
               onFinancialView={setFinancialView}
               onOpenAbout={onOpenAbout}
