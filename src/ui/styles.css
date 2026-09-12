@@ -1305,3 +1305,382 @@ button:disabled {
     scroll-behavior: auto;
   }
 }
+
+h1 {
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  max-width: 18em;
+}
+
+.explorer-head {
+  display: grid;
+  gap: 16px;
+  margin: 8px 0 20px;
+}
+
+.area-search {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.search-field-lg {
+  flex: 1 1 280px;
+}
+
+.search-field-lg input {
+  min-height: 52px;
+  border: 0;
+  border-radius: 18px;
+  padding: 12px 16px;
+  font: inherit;
+  background: var(--ink-2);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 8;
+  max-height: min(60vh, 420px);
+  overflow: auto;
+  background: var(--ink-2);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgb(25 62 52 / 0.16);
+  padding: 10px;
+}
+
+.suggestion-group + .suggestion-group {
+  margin-top: 10px;
+}
+
+.suggestion-row {
+  width: 100%;
+  display: grid;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 44px;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.suggestion-row:hover,
+.suggestion-row:focus-visible {
+  background: var(--soft);
+}
+
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ky-map svg {
+  max-height: 560px;
+}
+
+.ky-county.is-match {
+  fill: #9ec9b0;
+}
+
+.ky-marker {
+  fill: var(--pulse-accent);
+  stroke: #fff;
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+
+.ky-marker.is-selected {
+  fill: var(--forest);
+}
+
+.hospital-cards {
+  margin: 20px 0 28px;
+}
+
+.card-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-arrow {
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--forest);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.card-arrow:disabled {
+  background: #c5d0c8;
+  color: #6b776f;
+  cursor: not-allowed;
+}
+
+.card-position {
+  margin: 0;
+  font-weight: 700;
+}
+
+.browse-card {
+  background: var(--ink-2);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+.browse-card.is-selected {
+  box-shadow: 0 0 0 2px var(--forest);
+  background: #f3f8f4;
+}
+
+.browse-card:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
+.card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.card-metrics dt {
+  color: var(--paper-dim);
+  font-size: 0.78rem;
+}
+
+.card-metrics dd {
+  margin: 0;
+  font-weight: 750;
+}
+
+.results-list {
+  background: var(--ink-2);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 24px;
+}
+
+.results-list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.workspace.is-inline {
+  position: static;
+  inset: auto;
+  overflow: visible;
+  padding: 8px 0 32px;
+  background: transparent;
+}
+
+.hospital-bar.is-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--ink-2);
+}
+
+.sticky-period {
+  margin: 0;
+  min-width: 12rem;
+}
+
+.financial-view-controls,
+.financial-view-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.financial-view-controls {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.financial-view-controls label,
+.financial-view-controls select {
+  display: grid;
+  gap: 6px;
+}
+
+.financial-view-controls select,
+.period-select select {
+  min-height: 44px;
+  border: 0;
+  border-radius: 16px;
+  padding: 10px 12px;
+  font: inherit;
+  background: var(--ink-2);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+
+.financial-view-layout {
+  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.6fr);
+  align-items: start;
+}
+
+.chart-takeaway,
+.about-page section,
+.about-hero {
+  background: var(--ink-2);
+  border-radius: 24px;
+  padding: 18px 20px;
+}
+
+.chart-takeaway h3,
+.about-page h2 {
+  font-size: 1rem;
+}
+
+.chart-block.is-large .chart-svg {
+  min-height: 420px;
+}
+
+.chart-caption,
+.chart-toolbar,
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.chart-unit,
+.chart-unit-note {
+  font-weight: 700;
+}
+
+.chart-tick {
+  font-size: 14px;
+  fill: var(--paper-dim);
+}
+
+.chart-grid {
+  stroke: #e2e7df;
+}
+
+.chart-legend {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 16px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+.swatch-a {
+  background: var(--forest);
+}
+
+.swatch-b {
+  background: repeating-linear-gradient(135deg, #4f615a 0 4px, #8aa196 4px 8px);
+}
+
+.swatch-gap {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px #8a938b;
+}
+
+.chart-bar.alt {
+  fill: url(#none);
+  fill: #4f615a;
+  stroke: #2f3d37;
+  stroke-dasharray: 3 2;
+}
+
+.chart-tooltip {
+  background: var(--soft);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+
+.chart-expand-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.chart-expand-dialog {
+  position: relative;
+  z-index: 31;
+  width: min(1100px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  background: var(--page);
+  border-radius: 24px;
+  padding: 16px;
+}
+
+.about-page {
+  display: grid;
+  gap: 16px;
+}
+
+.about-factors {
+  list-style: none;
+  padding: 0;
+}
+
+.about-factors li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-nav a[aria-current="page"] {
+  font-weight: 800;
+  box-shadow: inset 0 -2px 0 var(--forest);
+}
+
+@media (max-width: 899px) {
+  .financial-view-layout,
+  .card-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-block.is-large .chart-svg {
+    min-height: 300px;
+  }
+
+  .ky-map svg {
+    max-height: 280px;
+  }
+
+  .hospital-bar.is-sticky {
+    position: static;
+  }
+}
+
+@media (min-width: 1100px) {
+  .page {
+    width: min(1320px, calc(100% - 40px));
+  }
+}

@@ -186,7 +186,7 @@ export function filterExplorerHospitals(
     totalInDataset: hospitals.length,
     matchCount: items.length,
     emptyReason: empty ? "no_matches" : "none",
-    emptyMessage: empty ? "No matching records in PulseLine." : null,
+    emptyMessage: empty ? "No matching hospitals in PulseLine." : null,
     chips,
     datasetLabel: `Showing ${hospitals.length} ${pluralHospitals(hospitals.length)} in the current dataset.`,
   };

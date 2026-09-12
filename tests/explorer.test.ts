@@ -5,15 +5,24 @@ import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { adaptEvidencePack } from "../lib/adapt-evidence.ts";
 import {
+  allKentuckyArea,
+  areaFromSuggestion,
   buildExplorerCatalog,
+  buildSearchSuggestions,
+  clampIndex,
   clusterPoints,
   defaultExplorerFilters,
   filterExplorerHospitals,
+  groupSuggestions,
+  hospitalMatchesArea,
   hospitalMatchesQuery,
+  matchingCountyFips,
   pluralHospitals,
   removeFilterChip,
   visibleSelectedHospitalId,
+  ZIP_OUTLINE_UNAVAILABLE,
 } from "../lib/explorer/index.ts";
+import { geometryBounds, padViewBox, projectedBounds } from "../lib/geo/bounds.ts";
 import { geometryToPath, projectKentucky } from "../lib/geo/project.ts";
 import { loadResearchDashboard } from "../lib/pipeline.ts";
 import { SCALE_FIXTURE_SIZE, scaleExplorerFixture } from "./fixtures/explorer-scale.ts";
@@ -22,7 +31,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const researchPack = JSON.parse(readFileSync(join(root, "research", "PulseLine_three_hospital_data.json"), "utf8"));
 const evidencePack = JSON.parse(readFileSync(join(root, "research", "PulseLine_expanded_evidence_v1.json"), "utf8"));
 const counties = JSON.parse(readFileSync(join(root, "data", "geo", "ky-counties.json"), "utf8")) as {
-  features: { id: string; properties: { name: string } }[];
+  features: { id: string; properties: { name: string }; geometry: { type: string; coordinates: unknown } }[];
 };
 
 const loaded = loadResearchDashboard(researchPack);
@@ -100,7 +109,7 @@ describe("hospital explorer filters", () => {
   it("uses no-matching-records copy instead of claiming hospitals do not exist", () => {
     const result = filterExplorerHospitals(catalog, { ...defaultExplorerFilters(), query: "louisville" });
     assert.equal(result.emptyReason, "no_matches");
-    assert.equal(result.emptyMessage, "No matching records in PulseLine.");
+    assert.equal(result.emptyMessage, "No matching hospitals in PulseLine.");
     assert.match(result.datasetLabel, /Showing 5 hospitals in the current dataset/);
     assert.ok(!result.emptyMessage?.toLowerCase().includes("no hospitals exist"));
   });
@@ -191,6 +200,60 @@ describe("map and list matching", () => {
     assert.match(path, /^M/);
     const pendingMarkers = catalog.filter((item) => item.latitude === null);
     assert.equal(pendingMarkers.length, catalog.length);
+  });
+
+  it("suggests hospitals, cities, counties, and facility ZIPs without inventing ZCTA outlines", () => {
+    const countyList = counties.features.map((feature) => ({ fips: feature.id, name: feature.properties.name }));
+    const suggestions = buildSearchSuggestions(catalog, countyList, "jackson");
+    assert.ok(suggestions.some((item) => item.kind === "city" && item.label.toLowerCase() === "jackson"));
+    assert.ok(suggestions.some((item) => item.kind === "hospital" && item.label.includes("Kentucky River")));
+    const jefferson = buildSearchSuggestions(catalog, countyList, "jefferson");
+    const county = jefferson.find((item) => item.kind === "county" && item.countyName === "Jefferson");
+    assert.ok(county);
+    assert.match(county.detail, /No matching hospitals in PulseLine/);
+    const morgan = catalog.find((item) => item.name.includes("Morgan"));
+    assert.ok(morgan?.zip);
+    const zipHits = buildSearchSuggestions(catalog, countyList, morgan.zip);
+    const zip = zipHits.find((item) => item.kind === "zip");
+    assert.ok(zip);
+    const area = areaFromSuggestion(zip);
+    assert.equal(area.outline, "unavailable");
+    assert.equal(area.outlineNote, ZIP_OUTLINE_UNAVAILABLE);
+    assert.ok(!groupSuggestions(zipHits).some((group) => group.kind === "zip" && group.label.toLowerCase().includes("zcta")));
+  });
+
+  it("keeps card browse index inside the result set and does not place unknown hospitals at a county center", () => {
+    assert.equal(clampIndex(8, 5), 4);
+    assert.equal(clampIndex(-2, 5), 0);
+    assert.equal(clampIndex(0, 0), 0);
+    const area = allKentuckyArea();
+    assert.ok(catalog.every((hospital) => hospitalMatchesArea(hospital, area)));
+    assert.ok(catalog.every((hospital) => hospital.latitude === null));
+    const breathitt = matchingCountyFips(catalog, {
+      ...areaFromSuggestion({
+        id: "county:21025",
+        kind: "county",
+        label: "Breathitt County",
+        detail: "",
+        hospitalId: null,
+        countyFips: "21025",
+        countyName: "Breathitt",
+        city: null,
+        zip: null,
+      }),
+    });
+    assert.deepEqual(breathitt, ["21025"]);
+  });
+
+  it("fits a county outline from sourced geometry and does not invent a ZIP polygon", () => {
+    const feature = counties.features.find((item) => item.id === "21025");
+    assert.ok(feature);
+    const bounds = geometryBounds(feature.geometry);
+    assert.ok(bounds);
+    const box = projectedBounds(feature.geometry, 800, 480);
+    assert.ok(box);
+    const padded = padViewBox(box, 24);
+    assert.ok(padded.width <= 800 && padded.height <= 480);
   });
 
   it("clusters overlapping fixture coordinates without touching production records", () => {

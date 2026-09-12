@@ -17,6 +17,23 @@ export {
 } from "./filters.ts";
 export { CITY_COUNTY, COORDINATE_PENDING_NOTE, locateFromCity, normalizeZip, zipMatches } from "./locations.ts";
 export {
+  allKentuckyArea,
+  areaFromCounty,
+  areaFromSuggestion,
+  buildSearchSuggestions,
+  clampIndex,
+  filtersForArea,
+  groupSuggestions,
+  hospitalMatchesArea,
+  matchingCountyFips,
+  CITY_OUTLINE_NOTE,
+  NO_MATCHING_HOSPITALS,
+  NO_MATCHING_HOSPITALS_NOTE,
+  SEARCH_KINDS,
+  ZIP_OUTLINE_UNAVAILABLE,
+} from "./search.ts";
+export type { AreaKind, AreaSelection, CountyRef, SearchKind, SearchSuggestion } from "./search.ts";
+export {
   CONCERN_FILTERS,
   COVERAGE_FILTERS,
   DATASET_SCOPE_NOTE,

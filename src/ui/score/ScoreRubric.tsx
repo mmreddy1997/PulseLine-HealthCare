@@ -35,9 +35,11 @@ function FactorBar({ row, maxPoints }: { row: Rubric["included"][number]; maxPoi
 export function ScoreRubricPanel({
   result,
   compact = false,
+  onOpenAbout,
 }: {
   result: FinancialDistressResult;
   compact?: boolean;
+  onOpenAbout?: () => void;
 }) {
   const rubric = buildScoreRubric(result);
   const maxPoints = Math.max(...rubric.included.map((row) => row.weightedPoints ?? 0), 1);
@@ -84,7 +86,13 @@ export function ScoreRubricPanel({
             </>
           )}
           <p>
-            <a href="#methodology">View full scoring rubric</a>
+            {onOpenAbout ? (
+              <button type="button" className="text-link" onClick={onOpenAbout}>
+                How calculated
+              </button>
+            ) : (
+              <a href="#about-scoring">How calculated</a>
+            )}
           </p>
         </details>
       </div>
@@ -93,15 +101,5 @@ export function ScoreRubricPanel({
 }
 
 export function FullScoringRubric() {
-  return (
-    <details id="scoring-rubric">
-      <summary>View full scoring rubric</summary>
-      <p className="tiny">
-        Thresholds and weights come from <code>lib/scoring-config.ts</code>. They are experimental assumptions. Effective
-        weights change when a factor is excluded. Coverage is shown beside score history so report-to-report
-        comparability can be checked.
-      </p>
-      <p className="tiny">{SCORE_NOT}</p>
-    </details>
-  );
+  return null;
 }

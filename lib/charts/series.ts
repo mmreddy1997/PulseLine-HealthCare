@@ -183,6 +183,17 @@ export function scoreHistorySeries(reports: HospitalView[]): ChartSeries {
   };
 }
 
+export function publishedResultSeries(reports: HospitalView[]): ChartSeries {
+  return moneySeries(
+    reports,
+    "published_patient_service_result",
+    "Patient-service result",
+    "How did the published patient-service result compare across reports?",
+    "CMS Net Income from Service to Patients. Not overall operating income, net income, or cash flow.",
+    (report) => publishedPatientServiceResult(report.hospital).value,
+  );
+}
+
 export function financialChartSeries(reports: HospitalView[]): ChartSeries[] {
   return [
     moneySeries(

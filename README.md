@@ -18,13 +18,15 @@ Community-access context remains available. It is not a hospital staffing measur
 
 ## How to use PulseLine
 
-1. Choose a hospital from the current dataset. Coverage is not comprehensive.
-2. Read the guided financial brief and dashboard for the selected fiscal period.
-3. Open Financials for charts and the statement table.
-4. Open Scenarios to change assumed revenue and expenses against an actual baseline.
-5. Open Evidence for events and gaps, then Ask for hospital-specific questions and selected-answer downloads.
+1. Search a hospital, city, county, or facility ZIP. The matching Kentucky area is highlighted when a county outline is available.
+2. Browse matching hospital cards with arrows, keyboard, or swipe. Browsing does not open financials.
+3. Choose **View financials** to open that hospital’s workspace below the cards.
+4. Use **Financial view** for one large chart at a time, then Scenarios, Evidence, and Ask.
+5. Open **About PulseLine** for methodology, sources, limitations, and the scoring rubric.
 
 Research cases without financials show **Financial data pending**. They keep sourced events. They do not receive a score, charts, or an enabled scenario model.
+
+“No matching hospitals in PulseLine” does not mean no hospitals exist there. ZIP searches use facility postal ZIP strings. PulseLine does not draw Census ZCTA polygons and does not invent missing boundaries or coordinates.
 
 ## Financial definitions
 
@@ -82,8 +84,8 @@ Unavailable inputs must not be treated as zero. PulseLine does not generate ente
 4. Financial definitions (`lib/finance`) for measures, comparability, statements, period age, and the guided brief.
 5. Scoring (`lib/score-financial.ts`, `lib/scoring-config.ts`). Thresholds and weights were not changed. The score is secondary in the workspace.
 6. Evidence ledger (`research/PulseLine_expanded_evidence_v1.json`) through `lib/adapt-evidence.ts`.
-7. Compact hospital selector plus the existing map/filter explorer. The map is secondary and was not expanded.
-8. Workspace tabs: Overview, Financials, Scenarios, Evidence, Ask.
+7. Search-first explorer: area search, Kentucky county map, hospital cards, then an inline financial workspace.
+8. Workspace tabs: Overview, Financials, Scenarios, Evidence, Ask. One large financial view at a time.
 9. PulseLine Ask (`lib/ask`, `src/ui/ask`) answers hospital-scoped questions. Valuation and acquire/for-sale questions are declined.
 
 The production interface does not include invented hospitals or fake scores. Isolated scale tests used 120 development fixtures (`tests/fixtures/explorer-scale.ts`) and are not shown in the app.
@@ -130,9 +132,10 @@ A blank event log does not mean no events occurred.
 ## Geography
 
 - County polygons: simplified U.S. Census Bureau cartographic county boundaries (public domain U.S. government work), Kentucky extract in `data/geo/ky-counties.json`.
-- County and ZIP filters mean recorded facility location, not patient service area.
-- Research-pack latitude and longitude are null. PulseLine does not place a fabricated hospital marker and does not geocode at runtime.
-- Kentucky River’s 400 Jett Drive vs 540 Jett Drive discrepancy is preserved.
+- Search can highlight a sourced county outline and fit the map to that county. City searches highlight the documented county when known; they do not draw city limits.
+- ZIP codes are facility postal strings, not Census ZCTA polygons. PulseLine does not invent a ZIP-area outline. The UI labels that limitation as “ZIP area outline unavailable.”
+- Research-pack latitude and longitude are null. PulseLine does not place a fabricated hospital marker, does not geocode at runtime, and does not request visitor location.
+- Kentucky River’s 400 Jett Drive vs 540 Jett Drive discrepancy is preserved in evidence details.
 
 ## PulseLine Ask
 

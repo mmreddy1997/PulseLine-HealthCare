@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
+import { FINANCIAL_VIEW_OPTIONS, seriesForView, viewHasValues } from "../lib/charts/views.ts";
 import {
   financialChartSeries,
   reportsComparable,
@@ -54,6 +55,21 @@ describe("financial chart series", () => {
     const comparability = reportsComparable(stretched);
     assert.equal(comparability.comparable, false);
     assert.match(comparability.note, /30 days/);
+  });
+
+  it("keeps supported financial views on sourced series and does not interpolate gaps", () => {
+    const morgan = facility("Morgan");
+    assert.equal(FINANCIAL_VIEW_OPTIONS.length, 5);
+    const revenue = seriesForView("npr_expenses", morgan.reports);
+    assert.equal(revenue.primary.points.length, morgan.reports.length);
+    assert.ok(revenue.secondary);
+    assert.ok(viewHasValues("npr_expenses", morgan.reports));
+    assert.ok(revenue.primary.points.every((point) => point.value === null || Number.isFinite(point.value)));
+    const result = seriesForView("patient_service_result", morgan.reports);
+    assert.equal(result.primary.unit, "usd");
+    const cash = seriesForView("cash_liquidity", morgan.reports);
+    assert.equal(cash.primary.unit, "usd");
+    assert.equal(cash.secondary?.unit, "ratio");
   });
 
   it("does not invent a percent change from missing or zero baselines", () => {

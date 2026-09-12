@@ -24,12 +24,13 @@ export function PulseMark() {
 }
 
 export function SiteHeader({
-  onHome,
-  closeLabel,
-  onClose,
-  closeRef,
+  page = "explore",
+  onExplore,
+  onAbout,
 }: {
-  onHome?: () => void;
+  page?: "explore" | "about";
+  onExplore?: () => void;
+  onAbout?: () => void;
   closeLabel?: string;
   onClose?: () => void;
   closeRef?: Ref<HTMLButtonElement>;
@@ -40,25 +41,38 @@ export function SiteHeader({
         className="brand"
         href="#hospitals"
         onClick={(event) => {
-          if (!onHome) return;
+          if (!onExplore) return;
           event.preventDefault();
-          onHome();
+          onExplore();
         }}
       >
         <PulseMark />
         <span>PulseLine</span>
       </a>
-      {onClose ? (
-        <button type="button" className="text-link" ref={closeRef} onClick={onClose}>
-          {closeLabel ?? "Close"}
-        </button>
-      ) : (
-        <nav className="site-nav" aria-label="Site">
-          <a href="#hospitals">Hospitals</a>
-          <a href="#methodology">How it works</a>
-          <a href="#about">About</a>
-        </nav>
-      )}
+      <nav className="site-nav" aria-label="Site">
+        <a
+          href="#hospitals"
+          aria-current={page === "explore" ? "page" : undefined}
+          onClick={(event) => {
+            if (!onExplore) return;
+            event.preventDefault();
+            onExplore();
+          }}
+        >
+          Explorer
+        </a>
+        <a
+          href="#about"
+          aria-current={page === "about" ? "page" : undefined}
+          onClick={(event) => {
+            if (!onAbout) return;
+            event.preventDefault();
+            onAbout();
+          }}
+        >
+          About PulseLine
+        </a>
+      </nav>
     </header>
   );
 }

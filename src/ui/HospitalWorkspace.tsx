@@ -1,25 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { FinancialViewId } from "../../lib/charts/views.ts";
 import { diligenceGaps, EMPTY_EVENT_LEDGER } from "../../lib/diligence/gaps.ts";
-import { financialChartSeries, moneySeries } from "../../lib/charts/series.ts";
-import type { ExplorerHospital } from "../../lib/explorer/types.ts";
 import { evaluateScenario, resetScenarioInputs } from "../../lib/scenario/whatif.ts";
 import type { AskContext, PulseAnswer } from "../../lib/ask/index.ts";
 import type { EvidenceHospital, EvidenceObservation, HospitalView, StructuralEvent } from "../types.ts";
 import { AskPane } from "./ask/AskPane.tsx";
-import { FinancialChart } from "./charts/FinancialChart.tsx";
 import { GapList } from "./diligence/GapList.tsx";
 import { ContextObservations, EventTimeline } from "./EventTimeline.tsx";
 import { FinancialCards } from "./finance/FinancialCards.tsx";
 import { FinancialStatements } from "./finance/FinancialStatements.tsx";
+import { FinancialView } from "./finance/FinancialView.tsx";
 import { GuidedBrief } from "./finance/GuidedBrief.tsx";
 import { PeriodMeta } from "./finance/PeriodMeta.tsx";
-import { cycleFocus } from "./focus.ts";
 import { factorDisplay, StatusGlyph } from "./hospital-display.tsx";
 import { fiscalLabel, shortFiscalRange, statusClass } from "./format.ts";
 import { WhatIfPanel } from "./scenario/WhatIfPanel.tsx";
 import { ScoreRubricPanel } from "./score/ScoreRubric.tsx";
-import { HospitalSelector } from "./selector/HospitalSelector.tsx";
-import { SiteHeader } from "./SiteHeader.tsx";
 
 export type WorkspacePane = "overview" | "financials" | "scenarios" | "evidence" | "ask";
 
@@ -47,17 +43,21 @@ function OverviewPane({
   research,
   reports,
   events,
-  observations,
   pending,
+  financialView,
+  onFinancialView,
+  onOpenAbout,
 }: {
   view: HospitalView | null;
   research: EvidenceHospital | null;
   reports: HospitalView[];
   events: StructuralEvent[];
-  observations: EvidenceObservation[];
   pending: boolean;
+  financialView: FinancialViewId;
+  onFinancialView: (id: FinancialViewId) => void;
+  onOpenAbout?: () => void;
 }) {
-  const gaps = diligenceGaps({ view, research, events, observations, pending });
+  const gaps = diligenceGaps({ view, research, events, observations: [], pending });
   if (!view) {
     return (
       <section className="content-panel">
@@ -71,33 +71,21 @@ function OverviewPane({
       </section>
     );
   }
-  const series = financialChartSeries(reports);
-  const revenue = series.find((item) => item.id === "npr_expenses");
-  const expenses = moneySeries(
-    reports,
-    "operating_expenses",
-    "Patient-service expenses",
-    "How did expenses compare?",
-    "CMS Less Total Operating Expense.",
-    (report) => report.hospital.financials.operatingExpenses,
-  );
   return (
     <section className="content-panel">
-      <GuidedBrief view={view} reports={reports} />
-      <h3>Financial dashboard</h3>
+      <GuidedBrief view={view} reports={reports} compact />
       <FinancialCards view={view} />
-      <div className="chart-grid">
-        {revenue ? <FinancialChart series={revenue} extra={expenses} compact /> : null}
-        {series
-          .filter((item) => ["patient_service_result", "cash", "current_ratio"].includes(item.id))
-          .map((item) => (
-            <FinancialChart key={item.id} series={item} compact />
-          ))}
-      </div>
+      <FinancialView
+        key={view.hospital.hospitalId}
+        view={view}
+        reports={reports}
+        selectedView={financialView}
+        onViewChange={onFinancialView}
+      />
       <aside className="score-secondary">
         <p className="label">Experimental concern score</p>
         <p className="tiny">Secondary to the financial records. Not acquisition attractiveness or a forecast.</p>
-        <ScoreRubricPanel result={view.financial} compact />
+        <ScoreRubricPanel result={view.financial} compact onOpenAbout={onOpenAbout} />
       </aside>
     </section>
   );
@@ -113,25 +101,9 @@ function FinancialsPane({ view, reports }: { view: HospitalView | null; reports:
       </section>
     );
   }
-  const series = financialChartSeries(reports);
-  const expenses = moneySeries(
-    reports,
-    "operating_expenses",
-    "Patient-service expenses",
-    "How did Less Total Operating Expense change across reports?",
-    "CMS Less Total Operating Expense.",
-    (report) => report.hospital.financials.operatingExpenses,
-  );
   return (
     <section className="content-panel">
-      <h3>Historical financial dashboard</h3>
-      <div className="chart-grid">
-        {series
-          .filter((item) => item.id !== "operating_expenses" && item.id !== "score_history")
-          .map((item) => (
-            <FinancialChart key={item.id} series={item} extra={item.id === "npr_expenses" ? expenses : null} />
-          ))}
-      </div>
+      <h3>Financial statements</h3>
       <FinancialStatements reports={reports} />
       <details>
         <summary>Metric definitions and sources</summary>
@@ -257,7 +229,6 @@ export function HospitalWorkspace({
   events,
   observations,
   research,
-  catalog,
   askContext,
   answers,
   selectedIds,
@@ -265,8 +236,8 @@ export function HospitalWorkspace({
   onSelectedIds,
   onClearConversation,
   onSelectReport,
-  onChangeHospital,
   onClose,
+  onOpenAbout,
 }: {
   title: string;
   subtitle: string;
@@ -276,7 +247,6 @@ export function HospitalWorkspace({
   events: StructuralEvent[];
   observations: EvidenceObservation[];
   research: EvidenceHospital | null;
-  catalog: ExplorerHospital[];
   askContext: AskContext;
   answers: PulseAnswer[];
   selectedIds: string[];
@@ -284,12 +254,12 @@ export function HospitalWorkspace({
   onSelectedIds: (ids: string[]) => void;
   onClearConversation: () => void;
   onSelectReport: (id: string) => void;
-  onChangeHospital: (hospitalId: string) => void;
   onClose: () => void;
+  onOpenAbout?: () => void;
 }) {
   const [pane, setPane] = useState<WorkspacePane>("overview");
+  const [financialView, setFinancialView] = useState<FinancialViewId>("npr_expenses");
   const [scenarioByReport, setScenarioByReport] = useState<Record<string, ReturnType<typeof resetScenarioInputs>>>({});
-  const [pickerOpen, setPickerOpen] = useState(false);
   const reportKey = view?.hospital.id ?? "pending";
   const scenarioInputs = scenarioByReport[reportKey] ?? resetScenarioInputs();
   const scenario = useMemo(
@@ -298,8 +268,7 @@ export function HospitalWorkspace({
   );
   const askWithScenario = useMemo(() => ({ ...askContext, scenario }), [askContext, scenario]);
   const wide = useWideSplit();
-  const panelRef = useRef<HTMLElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const onCloseRef = useRef(onClose);
   const openedId = view?.hospital.hospitalId ?? research?.hospitalId ?? title;
   const ccnLine = view
@@ -320,124 +289,131 @@ export function HospitalWorkspace({
   }, [onClose]);
 
   useEffect(() => {
-    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    closeRef.current?.focus();
-    const panel = panelRef.current;
-    if (!panel) return undefined;
+    headingRef.current?.focus();
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCloseRef.current();
-        return;
-      }
-      if (event.key === "Tab" && panel) cycleFocus(panel, event);
+      if (event.key !== "Escape") return;
+      const target = event.target;
+      if (target instanceof Element && !target.closest(".workspace")) return;
+      event.preventDefault();
+      onCloseRef.current();
     }
     document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      previouslyFocused?.focus();
-    };
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [openedId]);
 
   const showAskDesk = pane === "ask" && wide;
-  const selectedHospitalId = view?.hospital.hospitalId ?? research?.hospitalId ?? null;
 
   return (
-    <div className="drawer-layer">
-      <button type="button" className="drawer-backdrop" aria-label="Close hospital workspace" onClick={onClose} />
-      <aside ref={panelRef} className="workspace" role="dialog" aria-modal="true" aria-labelledby="workspace-title">
-        <SiteHeader
-          onHome={onClose}
-          closeLabel="Close"
-          onClose={wide ? undefined : onClose}
-          closeRef={wide ? undefined : closeRef}
-        />
-
-        {wide ? (
-          <header className="workspace-hero">
-            <p className="brand-kicker">Historical hospital financial review</p>
-          </header>
-        ) : (
-          <p className="eyebrow">{pending ? "Research case" : "Hospital financial brief"}</p>
-        )}
-        <div className="hospital-bar">
-          <div>
-            <h2 id="workspace-title">{title}</h2>
-            <p className="muted">
-              {wide ? [subtitle, ccnLine].filter(Boolean).join(" · ") : `${subtitle}${pending ? " · Financial data pending" : ""}`}
+    <section id="hospital-financials" className="workspace is-inline" aria-labelledby="workspace-title">
+      <div className="hospital-bar is-sticky">
+        <div>
+          <h2 id="workspace-title" ref={headingRef} tabIndex={-1}>
+            {title}
+          </h2>
+          <p className="muted">
+            {[subtitle, ccnLine].filter(Boolean).join(" · ")}
+            {pending ? " · Financial data pending" : ""}
+          </p>
+          {view ? (
+            <p className="tiny">
+              Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
             </p>
-            {view ? (
-              <p className="tiny">
-                Identity: {view.hospital.dataQuality.identityStatus === "unresolved" ? "review required" : "no PulseLine identity flag"}
-              </p>
-            ) : (
-              <p className="tiny">Identity fields were not invented for this research case.</p>
-            )}
-            {view ? <PeriodMeta view={view} /> : null}
-          </div>
-          <div className="hospital-bar-actions">
-            {wide ? (
-              <button type="button" className="chip" ref={closeRef} onClick={() => setPickerOpen((open) => !open)}>
-                Change hospital
-              </button>
-            ) : null}
-            {pending ? (
-              <p className="status-pill status-pending">
-                <StatusGlyph status="pending" />
-                Financial data pending
-              </p>
-            ) : view ? (
-              <p className={`status-pill ${statusClass(view.financial.status)}`}>
-                <StatusGlyph status={view.financial.status} />
-                Experimental score {view.financial.score ?? "none"}
-              </p>
-            ) : null}
-            {!wide && view ? <p className="coverage-line">Coverage: {view.financial.dataCoverage}</p> : null}
-          </div>
+          ) : (
+            <p className="tiny">Identity fields were not invented for this research case.</p>
+          )}
         </div>
-        {pickerOpen ? (
-          <HospitalSelector
-            hospitals={catalog}
-            selectedId={selectedHospitalId}
-            onSelect={(hospitalId) => {
-              setPickerOpen(false);
-              onChangeHospital(hospitalId);
-            }}
-            label="Switch hospital"
+        <div className="hospital-bar-actions">
+          {reports.length > 0 ? (
+            <label className="period-select sticky-period">
+              <span>Reporting period</span>
+              <select value={view?.hospital.id ?? ""} onChange={(event) => onSelectReport(event.target.value)}>
+                {reports.map((report) => (
+                  <option key={report.hospital.id} value={report.hospital.id}>
+                    {shortFiscalRange(report.hospital.fiscalYearStart, report.hospital.fiscalYearEnd)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {pending ? (
+            <p className="status-pill status-pending">
+              <StatusGlyph status="pending" />
+              Financial data pending
+            </p>
+          ) : view ? (
+            <p className={`status-pill ${statusClass(view.financial.status)}`}>
+              <StatusGlyph status={view.financial.status} />
+              Experimental score {view.financial.score ?? "none"}
+            </p>
+          ) : null}
+          <button type="button" className="chip chip-quiet" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      </div>
+      {view ? <PeriodMeta view={view} /> : null}
+
+      <div className="workspace-tabs" role="tablist" aria-label="Hospital sections">
+        {(Object.keys(PANE_LABELS) as WorkspacePane[]).map((item) => (
+          <button
+            key={item}
+            type="button"
+            role="tab"
+            aria-selected={pane === item}
+            className={pane === item ? "tab active" : "tab"}
+            onClick={() => setPane(item)}
+          >
+            {PANE_LABELS[item]}
+          </button>
+        ))}
+      </div>
+
+      {showAskDesk ? (
+        <div className="ask-desk">
+          <EvidenceShelf reports={reports} view={view} onSelectReport={onSelectReport} />
+          <AskPane
+            context={askWithScenario}
+            answers={answers}
+            selectedIds={selectedIds}
+            onAnswers={onAnswers}
+            onSelectedIds={onSelectedIds}
+            onClear={onClearConversation}
           />
-        ) : null}
-
-        <div className="workspace-tabs" role="tablist" aria-label="Hospital sections">
-          {(Object.keys(PANE_LABELS) as WorkspacePane[]).map((item) => (
-            <button
-              key={item}
-              type="button"
-              role="tab"
-              aria-selected={pane === item}
-              className={pane === item ? "tab active" : "tab"}
-              onClick={() => setPane(item)}
-            >
-              {PANE_LABELS[item]}
-            </button>
-          ))}
+          <ContextRail pending={pending} />
         </div>
-
-        {reports.length > 0 ? (
-          <label className="period-select">
-            <span>Reporting period</span>
-            <select value={view?.hospital.id ?? ""} onChange={(event) => onSelectReport(event.target.value)}>
-              {reports.map((report) => (
-                <option key={report.hospital.id} value={report.hospital.id}>
-                  {shortFiscalRange(report.hospital.fiscalYearStart, report.hospital.fiscalYearEnd)}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-
-        {showAskDesk ? (
-          <div className="ask-desk">
-            <EvidenceShelf reports={reports} view={view} onSelectReport={onSelectReport} />
+      ) : (
+        <div className="workspace-body">
+          {pane === "overview" ? (
+            <OverviewPane
+              view={view}
+              research={research}
+              reports={reports}
+              events={events}
+              pending={pending}
+              financialView={financialView}
+              onFinancialView={setFinancialView}
+              onOpenAbout={onOpenAbout}
+            />
+          ) : null}
+          {pane === "financials" ? <FinancialsPane view={view} reports={reports} /> : null}
+          {pane === "scenarios" ? (
+            <WhatIfPanel
+              scenario={scenario}
+              inputs={scenarioInputs}
+              onChange={(inputs) => setScenarioByReport((current) => ({ ...current, [reportKey]: inputs }))}
+              onReset={() => setScenarioByReport((current) => ({ ...current, [reportKey]: resetScenarioInputs() }))}
+            />
+          ) : null}
+          {pane === "evidence" ? (
+            <EvidencePane
+              view={view}
+              research={research}
+              events={events}
+              observations={observations}
+              pending={pending}
+            />
+          ) : null}
+          {pane === "ask" ? (
             <AskPane
               context={askWithScenario}
               answers={answers}
@@ -446,56 +422,9 @@ export function HospitalWorkspace({
               onSelectedIds={onSelectedIds}
               onClear={onClearConversation}
             />
-            <ContextRail pending={pending} />
-          </div>
-        ) : (
-          <div className="workspace-body">
-            {pane === "overview" ? (
-              <OverviewPane
-                view={view}
-                research={research}
-                reports={reports}
-                events={events}
-                observations={observations}
-                pending={pending}
-              />
-            ) : null}
-            {pane === "financials" ? <FinancialsPane view={view} reports={reports} /> : null}
-            {pane === "scenarios" ? (
-              <WhatIfPanel
-                scenario={scenario}
-                inputs={scenarioInputs}
-                onChange={(inputs) => setScenarioByReport((current) => ({ ...current, [reportKey]: inputs }))}
-                onReset={() => setScenarioByReport((current) => ({ ...current, [reportKey]: resetScenarioInputs() }))}
-              />
-            ) : null}
-            {pane === "evidence" ? (
-              <EvidencePane
-                view={view}
-                research={research}
-                events={events}
-                observations={observations}
-                pending={pending}
-              />
-            ) : null}
-            {pane === "ask" ? (
-              <AskPane
-                context={askWithScenario}
-                answers={answers}
-                selectedIds={selectedIds}
-                onAnswers={onAnswers}
-                onSelectedIds={onSelectedIds}
-                onClear={onClearConversation}
-              />
-            ) : null}
-          </div>
-        )}
-
-        <footer className="workspace-footer">
-          <p>Because we believe your ZIP code should not determine the quality of care you receive.</p>
-          <p>Experimental financial review · Not a valuation, deal recommendation, or diligence substitute</p>
-        </footer>
-      </aside>
-    </div>
+          ) : null}
+        </div>
+      )}
+    </section>
   );
 }
